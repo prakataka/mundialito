@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUNDIALITO — Drafteá leyendas y ganá la Copa</title>
+<meta name="description" content="Tirá el dado, armá tu once con leyendas de todos los mundiales y jugá un Mundial completo con partidos en vivo, cambios, momentum y penales.">
+<style>
+  :root{
+    --bg:#050507; --card:#111217; --card2:#1a1c24; --card3:#252834; --line:#262a36;
+    --text:#f5f6fa; --muted:#9aa0b4; --gold:#e3b94d; --gold1:#f5d77e; --gold2:#a8842e;
+    --green:#34d268; --red:#ff5252; --yellow:#ffd34d; --blue:#4da3ff;
+    --grass:#1e8a3c; --grass2:#136d2e;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  .pk,.pchip,.opt,.btn,.sl,.chip{user-select:none; -webkit-user-select:none;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+    color:var(--text); min-height:100vh;
+    background:
+      radial-gradient(620px 300px at 50% -60px, rgba(227,185,77,.13), transparent 70%),
+      radial-gradient(900px 420px at 50% 105%, rgba(30,138,60,.18), transparent 70%),
+      var(--bg);
+    background-attachment:fixed;
+  }
+  body::after{
+    content:''; position:fixed; left:0; right:0; bottom:0; height:9px; z-index:5; pointer-events:none;
+    background:repeating-linear-gradient(90deg, var(--grass) 0 54px, var(--grass2) 54px 108px);
+    border-top:1px solid rgba(255,255,255,.25);
+    box-shadow:0 -10px 30px rgba(19,109,46,.35);
+  }
+  .wrap{max-width:600px; margin:0 auto; padding:0 16px 120px;}
+
+  .top{
+    position:sticky; top:0; z-index:60; display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin:0 -16px; padding:15px 18px 13px;
+    background:rgba(5,5,8,.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(227,185,77,.25);
+  }
+  .logo{font-weight:900; font-size:19px; letter-spacing:-.3px;}
+  .logo b{
+    background:linear-gradient(180deg,var(--gold1),var(--gold) 60%,var(--gold2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .camp{font-size:12px; color:var(--muted); text-align:right;}
+
+  .scr{display:none; animation:fade .35s ease; padding-top:18px;}
+  .scr.on{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+  .panel{
+    background:linear-gradient(180deg, var(--card), #0d0e13);
+    border:1px solid var(--line); border-radius:22px; padding:22px 18px; margin-bottom:16px;
+    box-shadow:0 14px 36px rgba(0,0,0,.5);
+  }
+  h1{font-size:clamp(28px,7vw,40px); line-height:1.1; font-weight:900; letter-spacing:-1px;}
+  h1 span{
+    background:linear-gradient(180deg,var(--gold1),var(--gold) 60%,var(--gold2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  h2{
+    font-size:13px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+    margin-bottom:12px; color:var(--gold1); display:flex; align-items:center; gap:8px;
+  }
+  h2::after{content:''; flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent);}
+  .muted{color:var(--muted); font-size:14.5px; line-height:1.6;}
+
+  .optrow{display:flex; gap:4px; background:#0c0d11; border:1px solid var(--line); border-radius:14px; padding:4px; margin:8px 0 18px;}
+  .opt{
+    flex:1; text-align:center; padding:11px 6px; border-radius:10px; cursor:pointer;
+    font-size:13.5px; font-weight:700; color:var(--muted); transition:all .18s; border:none; white-space:nowrap;
+  }
+  .opt.sel{background:var(--card3); color:var(--gold1); box-shadow:0 2px 10px rgba(0,0,0,.5);}
+
+  .btn{
+    background:var(--card2); color:var(--text); border:1px solid var(--line); border-radius:13px;
+    padding:13px 18px; font-size:15px; font-weight:700; cursor:pointer; transition:all .15s; font-family:inherit;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn.big{
+    background:linear-gradient(180deg,var(--gold1),var(--gold) 55%,#c79a35); color:#1d1503;
+    width:100%; padding:17px; border:none; border-radius:15px; font-size:16.5px; font-weight:900;
+    letter-spacing:.3px; box-shadow:0 10px 28px rgba(227,185,77,.28);
+  }
+  .btn.big:hover{filter:brightness(1.06);}
+  .btn.warn{color:var(--red);}
+  .btn:disabled{opacity:.35; pointer-events:none;}
+  .nuevo{
+    display:inline-block; margin-left:6px; background:var(--red); color:#fff; font-size:10px;
+    font-weight:900; letter-spacing:1px; border-radius:7px; padding:2px 7px; vertical-align:middle;
+  }
+
+  /* ---- DRAFT ---- */
+  .draftgrid{display:flex; flex-direction:column; gap:4px;}
+  .prog{height:6px; background:#0c0d11; border-radius:99px; overflow:hidden; margin:2px 0 16px; border:1px solid var(--line);}
+  .prog i{display:block; height:100%; background:linear-gradient(90deg,var(--gold2),var(--gold1)); transition:width .3s; border-radius:99px;}
+  .slotlist{display:flex; flex-direction:column; margin-bottom:18px; background:#0c0d11; border:1px solid var(--line); border-radius:16px; padding:6px 12px;}
+  .sl{display:flex; align-items:center; gap:10px; padding:9px 2px; font-size:14.5px; border-bottom:1px solid rgba(255,255,255,.05);}
+  .sl:last-child{border-bottom:none;}
+  .sl .pos{width:40px; font-weight:800; color:var(--muted); font-size:10.5px; letter-spacing:.5px;}
+  .sl.full .pos{color:var(--green);}
+  .sl .nm{flex:1; font-weight:600; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sl .rt{font-weight:900; color:var(--gold1); font-variant-numeric:tabular-nums;}
+  .sl .from{font-size:11px; color:var(--muted); white-space:nowrap;}
+  .sl.empty .nm{color:#43485a; font-weight:400;}
+  .sl.full.idolo{background:linear-gradient(90deg, rgba(227,185,77,.15), transparent 75%); border-radius:9px; padding-left:8px; margin-left:-8px;}
+  .benchtag{font-size:11px; color:var(--gold1); font-weight:900; letter-spacing:2px; margin:12px 0 4px;}
+  .rollhead{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .rollteam{font-size:21px; font-weight:900; letter-spacing:-.4px;}
+  .rollteam small{color:var(--muted); font-weight:500; font-size:13px;}
+  .picklist{
+    display:flex; flex-direction:column; gap:8px; max-height:46vh; overflow-y:auto; padding:2px;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;
+  }
+  .pk{
+    display:flex; align-items:center; gap:10px; background:var(--card2); border-radius:13px;
+    padding:13px 14px; cursor:pointer; transition:border-color .12s, opacity .12s; font-size:15px; border:1px solid var(--line);
+  }
+  @media(hover:hover){ .pk:hover{border-color:rgba(227,185,77,.6);} .btn:hover{border-color:rgba(227,185,77,.55);} }
+  .pk:active{opacity:.75;}
+  .pk.nofit{opacity:.28; pointer-events:none;}
+  .pk .pos{width:38px; font-size:10.5px; font-weight:800; color:var(--muted);}
+  .pk .nm{flex:1; font-weight:600;}
+  .pk .rt{font-weight:900; color:var(--gold1); font-variant-numeric:tabular-nums; font-size:16px;}
+  .pk.idolo{
+    border:1px solid var(--gold);
+    background:linear-gradient(90deg, rgba(227,185,77,.18), var(--card2) 60%);
+    box-shadow:0 0 16px rgba(227,185,77,.18);
+  }
+  .meter{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px;}
+  .meter .m{border-radius:14px; padding:12px 8px; text-align:center; border:1px solid var(--line);}
+  .meter .m:nth-child(1){background:linear-gradient(180deg, rgba(255,82,82,.12), var(--card2));}
+  .meter .m:nth-child(2){background:linear-gradient(180deg, rgba(255,211,77,.10), var(--card2));}
+  .meter .m:nth-child(3){background:linear-gradient(180deg, rgba(77,163,255,.12), var(--card2));}
+  .meter .v{font-size:23px; font-weight:900; font-variant-numeric:tabular-nums;}
+  .meter .l{font-size:10px; color:var(--muted); letter-spacing:1.4px; margin-top:2px;}
+
+  .sinbox{
+    margin-top:14px; background:linear-gradient(180deg, rgba(227,185,77,.07), var(--card2));
+    border:1px solid rgba(227,185,77,.3); border-radius:14px; padding:13px 15px;
+    font-size:13px; line-height:1.85;
+  }
+  .sinbox b{color:var(--gold1); letter-spacing:1.5px; display:block; margin-bottom:4px; font-size:11px; text-transform:uppercase;}
+
+  /* ---- COPA ---- */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{padding:9px 7px; text-align:left; border-bottom:1px solid rgba(255,255,255,.06);}
+  th{color:var(--gold1); font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; font-weight:800; border-bottom:1px solid rgba(227,185,77,.35);}
+  tr.me{background:linear-gradient(90deg, rgba(227,185,77,.14), transparent);}
+  tr.me td:first-child{color:var(--gold1); font-weight:900;}
+  .fixrow{display:flex; align-items:center; gap:8px; padding:12px 0 4px; font-size:14.5px; flex-wrap:wrap;}
+  .fixrow .sc{font-weight:900; min-width:40px; text-align:center; color:var(--gold1);}
+  .bracket{display:flex; gap:7px; overflow-x:auto; padding:2px 0 10px; font-size:12px; color:var(--muted);}
+  .bracket span{background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:8px 13px; white-space:nowrap; flex-shrink:0; font-weight:600;}
+  .bracket span.now{
+    color:#1d1503; background:linear-gradient(180deg,var(--gold1),var(--gold)); border:none;
+    font-weight:900; box-shadow:0 4px 14px rgba(227,185,77,.3);
+  }
+  .bracket span.won{color:var(--green); border-color:rgba(52,210,104,.4);}
+
+  /* ---- PARTIDO ---- */
+  .scorebar{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px;
+    background:linear-gradient(180deg, var(--card2), #14151b); border:1px solid var(--line);
+    border-radius:18px; padding:14px 10px; box-shadow:0 10px 26px rgba(0,0,0,.45);
+  }
+  .scorebar .tm{font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px; text-align:center; line-height:1.35;}
+  .scorebar .mid{text-align:center; padding:0 16px; border-left:1px solid var(--line); border-right:1px solid var(--line);}
+  .scorebar .score{
+    font-size:54px; font-weight:900; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-2px;
+    background:linear-gradient(180deg,#fff,var(--gold1)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .minuto{
+    display:inline-block; margin-top:8px; font-size:13px; color:#1d1503; font-weight:900;
+    background:linear-gradient(180deg,var(--gold1),var(--gold)); border-radius:8px; padding:3px 12px;
+    font-variant-numeric:tabular-nums; box-shadow:0 3px 10px rgba(227,185,77,.3);
+  }
+  .mombox{margin:16px auto 2px; max-width:420px;}
+  .momlbl{display:flex; justify-content:space-between; font-size:9.5px; color:var(--muted); letter-spacing:1.2px; margin-bottom:5px; font-weight:700;}
+  .mom{height:6px; background:#0c0d11; border:1px solid var(--line); border-radius:99px; position:relative; overflow:hidden;}
+  .mom i{position:absolute; top:0; bottom:0; left:50%; width:0; background:var(--green); transition:all .4s; border-radius:99px;}
+  .controls{
+    position:fixed; left:0; right:0; bottom:9px; z-index:80;
+    display:flex; gap:6px; justify-content:center; align-items:center;
+    padding:11px 12px calc(13px + env(safe-area-inset-bottom));
+    background:rgba(8,8,11,.85); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+    border-top:1px solid rgba(227,185,77,.25);
+  }
+  .controls .btn{padding:11px 13px; font-size:13.5px; border-radius:11px; white-space:nowrap;}
+  .feed{margin-top:16px; max-height:44vh; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;}
+  .ev{
+    background:var(--card); border:1px solid var(--line); border-left:3px solid var(--card3);
+    border-radius:12px; padding:10px 13px; margin-bottom:7px; font-size:14.5px; line-height:1.5; animation:fade .25s;
+  }
+  .ev .min{
+    display:inline-block; background:var(--card3); color:var(--gold1); font-weight:900; font-size:11px;
+    border-radius:6px; padding:1px 8px; margin-right:7px; font-variant-numeric:tabular-nums;
+  }
+  .ev.gol{border-left-color:var(--green); background:linear-gradient(90deg, rgba(52,210,104,.13), var(--card)); font-weight:700;}
+  .ev.golr{border-left-color:var(--red); background:linear-gradient(90deg, rgba(255,82,82,.12), var(--card)); font-weight:700;}
+  .ev.warn{border-left-color:var(--gold2); color:#e3e5ee;}
+  .statline{display:flex; gap:6px; justify-content:center; font-size:11.5px; color:var(--muted); margin-top:12px; flex-wrap:wrap;}
+  .statline span{background:var(--card2); border:1px solid var(--line); border-radius:9px; padding:5px 11px; font-weight:600;}
+
+  /* ---- PIZARRA ---- */
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(3px); display:none; align-items:flex-end; justify-content:center; z-index:120;}
+  .modal.open{display:flex;}
+  .pizcard{
+    background:linear-gradient(180deg,#16181f,#0e0f14); border-top:1px solid rgba(227,185,77,.35);
+    border-radius:24px 24px 0 0; width:100%; max-width:600px; max-height:88vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; padding:14px 16px calc(24px + env(safe-area-inset-bottom));
+    text-align:center; animation:sheet .32s cubic-bezier(.2,.9,.3,1); box-shadow:0 -18px 50px rgba(0,0,0,.6);
+  }
+  .pizcard::before{content:''; display:block; width:38px; height:4px; background:#3c4050; border-radius:99px; margin:0 auto 14px;}
+  @keyframes sheet{from{transform:translateY(70px); opacity:.4;} to{transform:none; opacity:1;}}
+  .pizrow{display:flex; gap:16px 18px; justify-content:center; flex-wrap:wrap; margin:18px 0;}
+  .pchip{background:none; border:none; padding:0; width:78px; cursor:pointer; text-align:center; transition:transform .12s;}
+  .pchip:active{transform:scale(.93);}
+  .pc-circle{width:60px; height:60px; border-radius:50%; margin:0 auto 7px; padding:3px; display:flex; box-shadow:0 4px 12px rgba(0,0,0,.45);}
+  .pc-circle span{flex:1; border-radius:50%; background:var(--card2); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px; color:var(--text);}
+  .pchip b{display:block; font-size:11.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text);}
+  .pchip .pc-sub{display:block; color:var(--muted); font-size:10px; margin-top:1px;}
+  .pchip.bench .pc-circle span{background:#0c0d11; border:1px dashed #4a4f63;}
+  .pchip.sel .pc-circle{box-shadow:0 0 0 3px var(--gold), 0 0 18px rgba(227,185,77,.5);}
+  .pchip.sel b{color:var(--gold1);}
+  .pchip.roja{opacity:.32;}
+  .pchip.idolo .pc-circle span{color:var(--gold1); box-shadow:inset 0 0 0 2px var(--gold);}
+  .ebar{height:4px; background:#0c0d11; border-radius:99px; margin-top:6px; overflow:hidden;}
+  .ebar i{display:block; height:100%; border-radius:99px;}
+
+  /* ---- PENALES ---- */
+  .pengrid{display:flex; gap:8px; justify-content:center; margin:16px 0;}
+  .pengrid .pbtn{flex:1; max-width:110px; height:64px; font-size:13px;}
+  .penscore{display:flex; gap:18px; justify-content:center; font-size:15px; margin:10px 0; flex-wrap:wrap; font-weight:700;}
+  .pendots{letter-spacing:3px; font-size:17px;}
+  .arco{
+    width:min(320px,92%); height:108px; margin:14px auto 0; border:3px solid #e8e8ec; border-bottom:none;
+    border-radius:6px 6px 0 0; position:relative;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+  }
+  .pelota{position:absolute; font-size:22px; transition:all .5s ease; left:46%; bottom:-26px;}
+  .arquero{position:absolute; font-size:26px; transition:all .5s ease; left:44%; bottom:4px;}
+
+  /* ---- FINAL ---- */
+  .bigemoji{font-size:74px; text-align:center; margin:8px 0; filter:drop-shadow(0 0 26px rgba(227,185,77,.45));}
+  .center{text-align:center;}
+  .sharecard{
+    background:#0c0d11; border:1px solid var(--line); border-left:3px solid var(--gold);
+    border-radius:16px; padding:16px; margin:16px 0; font-size:13.5px; line-height:1.7; white-space:pre-wrap; text-align:left;
+  }
+  .toast{
+    position:fixed; top:66px; left:50%; transform:translateX(-50%); z-index:300;
+    background:rgba(26,28,36,.96); backdrop-filter:blur(14px); border:1px solid rgba(227,185,77,.45);
+    border-radius:13px; padding:12px 18px; font-size:14px; font-weight:700; display:none; max-width:88%;
+    box-shadow:0 12px 30px rgba(0,0,0,.5);
+  }
+  .confeti{position:fixed; top:-14px; width:8px; height:13px; z-index:400; border-radius:2px; animation:caer linear forwards;}
+  @keyframes caer{to{transform:translateY(106vh) rotate(720deg);}}
+  footer{text-align:center; color:#5b6072; font-size:11px; margin-top:28px; line-height:1.8;}
+  .donar{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+  .donar a{
+    display:inline-flex; align-items:center; gap:7px; text-decoration:none; color:#1d1503;
+    background:linear-gradient(180deg,var(--gold1),var(--gold)); border-radius:13px; padding:13px 22px;
+    font-weight:900; font-size:14px; transition:transform .12s; box-shadow:0 8px 22px rgba(227,185,77,.25);
+  }
+  .donar a.alt{background:var(--card2); color:var(--text); border:1px solid var(--line); box-shadow:none;}
+  .donar a:active{transform:scale(.96);}
+  .adslot{
+    margin:16px 0; min-height:90px; background:var(--card); border:1px dashed #343a4c;
+    border-radius:14px; display:flex; align-items:center; justify-content:center;
+    color:#5b6072; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  }
+  .subpanel{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">⚽ <b>MUNDIALITO</b></div>
+    <div class="camp" id="campInfo"></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="scr on" id="scrHome">
+    <div class="panel" style="text-align:center;">
+      <div style="font-size:68px; line-height:1;">⚽</div>
+      <h1>Drafteá tu XI histórico.<br><span>Ganá la Copa del Mundo.</span></h1>
+      <p class="muted" style="margin-top:10px;">El dado sortea una selección histórica (de 1958 a 2026, potencias y cenicientas). Te llevás <b>UN jugador por tirada</b>. Armás tu lista mundialista: <b>11 titulares + 7 suplentes</b>… y arranca un Mundial de verdad: grupos, eliminatorias, partidos minuto a minuto con hasta <b>5 cambios cuando quieras</b>, momentum y penales.</p>
+    </div>
+    <div class="panel">
+      <h2>⚙️ Tu formación</h2>
+      <div class="optrow" id="optForm"></div>
+      <h2>🎮 Estilo de juego</h2>
+      <div class="optrow" id="optStyle"></div>
+      <h2>🧠 Dificultad del draft</h2>
+      <div class="optrow" id="optMode"></div>
+      <p class="muted" id="modeDesc"></p>
+      <br>
+      <button class="btn big" onclick="empezar(false)">⚡ MUNDIAL EXPRESS</button>
+      <button class="btn big" style="margin-top:10px;" onclick="empezar(true)">🛣️ MODO CARRERA <span class="nuevo">NUEVO</span></button>
+      <p class="muted" style="font-size:12.5px; margin-top:10px;">Carrera: jugás la <b>Eurocopa</b>, después las <b>Eliminatorias</b> (si no clasificás, se acabó) y recién ahí el <b>Mundial</b> — con mercado de pases de 3 refuerzos entre torneo y torneo.</p>
+    </div>
+
+    <!-- ===== PUBLICIDAD: pegá acá tu bloque de Google AdSense =====
+    1) Creá tu cuenta en adsense.google.com y verificá tu sitio.
+    2) Pegá el codigo global de AdSense en el head de este archivo.
+    3) Reemplazá este placeholder por tu bloque adsbygoogle. -->
+    <div class="adslot">Publicidad</div>
+
+    <div class="panel center">
+      <h2 style="justify-content:center;">☕ ¿Te cebó el Mundialito?</h2>
+      <p class="muted">Esto es gratis y hecho a pulmón. Si te hizo gritar un gol, bancá al DT:</p>
+      <div class="donar">
+        <a href="https://cafecito.app/prakataka" target="_blank" rel="noopener">☕ Invitame un cafecito</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAFT -->
+  <div class="scr" id="scrDraft">
+    <div class="panel">
+      <div class="prog"><i id="draftProg"></i></div>
+      <div class="draftgrid">
+        <div>
+          <h2>📋 Tu equipo <span class="muted" id="draftCount"></span></h2>
+          <div class="slotlist" id="slotList"></div>
+        </div>
+        <div>
+          <div class="rollhead">
+            <div class="rollteam" id="rollTeam"></div>
+            <button class="btn" onclick="reroll()" id="btnReroll">🎲 Tirar de nuevo (<span id="rerollsLeft"></span>)</button>
+          </div>
+          <p class="muted" style="margin-bottom:8px;">Elegí <b>un</b> jugador que entre en un puesto libre. Los que no encajan están apagados.</p>
+          <div class="picklist" id="pickList"></div>
+          <div class="meter">
+            <div class="m"><div class="v" id="mAtk" style="color:var(--red)">0</div><div class="l">ATAQUE</div></div>
+            <div class="m"><div class="v" id="mMed" style="color:var(--yellow)">0</div><div class="l">MEDIO</div></div>
+            <div class="m"><div class="v" id="mDef" style="color:var(--blue)">0</div><div class="l">DEFENSA</div></div>
+          </div>
+          <div class="sinbox" id="sinList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COPA -->
+  <div class="scr" id="scrCup">
+    <div class="panel">
+      <h2 id="cupTitle">🏆 Fase de grupos</h2>
+      <div class="bracket" id="bracket"></div>
+      <div id="groupBox"><br><table id="groupTable"></table><br><div id="fixtures"></div></div>
+      <div class="sinbox" id="sinCup"></div>
+      <br>
+      <button class="btn big" id="btnPlay" onclick="irAlPartido()">⚽ JUGAR PARTIDO</button>
+    </div>
+  </div>
+
+  <!-- MERCADO DE PASES -->
+  <div class="scr" id="scrMercado">
+    <div class="panel">
+      <h2>💼 Mercado de pases</h2>
+      <p class="muted" id="mkInfo"></p>
+      <div class="rollhead" style="margin-top:14px;">
+        <div class="rollteam" id="mkTeam"></div>
+        <button class="btn" onclick="mkReroll()" id="mkRerollBtn">🎲 Otra (<span id="mkRerolls"></span>)</button>
+      </div>
+      <div class="picklist" id="mkList"></div>
+      <div id="mkSwap" style="display:none;">
+        <p class="muted" id="mkSwapTxt" style="margin-top:14px;"></p>
+        <div class="pizrow" id="mkSwapList"></div>
+      </div>
+      <br>
+      <button class="btn" onclick="mkSaltear()" style="width:100%;">⏭ No ficho más — seguir al próximo torneo</button>
+    </div>
+  </div>
+
+  <!-- PARTIDO -->
+  <div class="scr" id="scrMatch">
+    <div class="panel">
+      <div class="scorebar">
+        <div class="tm" id="tmA"></div>
+        <div class="mid"><div class="score" id="scoreTxt">0 - 0</div><div class="minuto" id="minTxt">0'</div></div>
+        <div class="tm" id="tmB"></div>
+      </div>
+      <div class="mombox">
+        <div class="momlbl"><span id="momL">TU EQUIPO</span><span id="momR">RIVAL</span></div>
+        <div class="mom"><i id="momBar"></i></div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="btnPause" onclick="togglePausa()">⏸ Pausar</button>
+        <button class="btn" style="border-color:var(--gold); color:var(--gold);" onclick="abrirPizarra()">🔁 Cambios</button>
+        <button class="btn" onclick="setVel(1)" id="v1">▶ x1</button>
+        <button class="btn" onclick="setVel(2)" id="v2">⏩ x2</button>
+        <button class="btn" onclick="setVel(4)" id="v4">⚡ x4</button>
+        <button class="btn warn" onclick="saltarFinal()">⏭ Al final</button>
+      </div>
+      <div class="feed" id="feed"></div>
+      <div class="statline" id="statline"></div>
+    </div>
+  </div>
+
+  <!-- PENALES -->
+  <div class="scr" id="scrPens">
+    <div class="panel center">
+      <h2>🥅 ¡PENALES!</h2>
+      <div class="penscore">
+        <span id="penA"></span><span id="penB"></span>
+      </div>
+      <div id="penSetup">
+        <p class="muted">Elegí <b>en orden</b> a tus 5 pateadores. Su definición real decide el penal. Después siguen los demás (arquero al final), como manda la regla.</p>
+        <div class="pizrow" id="penList" style="margin-top:12px;"></div>
+        <br><button class="btn big" id="penOk" onclick="confirmarPateadores()" disabled>✅ Confirmar pateadores</button>
+      </div>
+      <div id="penGame" style="display:none;">
+        <div class="arco"><span class="arquero" id="arquero">🧤</span><span class="pelota" id="pelota">⚽</span></div>
+        <p class="muted" id="penMsg" style="margin-top:30px;"></p>
+        <div class="pengrid" id="penBtns">
+          <button class="btn pbtn" onclick="patear(0)">↖ Palo izq.</button>
+          <button class="btn pbtn" onclick="patear(1)">⬆ Al medio</button>
+          <button class="btn pbtn" onclick="patear(2)">↗ Palo der.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIN -->
+  <div class="scr" id="scrEnd">
+    <div class="panel center">
+      <div class="bigemoji" id="endEmoji">🏆</div>
+      <h1 id="endTitle" class="center"></h1>
+      <p class="muted" id="endSub" style="margin-top:8px;"></p>
+      <div class="sharecard" id="shareCard"></div>
+      <button class="btn big" onclick="compartirCarta()">📲 Compartir mi campaña</button>
+      <button class="btn" onclick="location.reload()" style="margin-top:8px;">🔄 Jugar de nuevo</button>
+      <div class="adslot">Publicidad</div>
+      <div class="donar">
+        <a href="https://cafecito.app/prakataka" target="_blank" rel="noopener">☕ Invitame un cafecito</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>MUNDIALITO · Juego fan no oficial.<br>Plantillas históricas reales 1958-2026 · Stats ficticias con fines de entretenimiento.</footer>
+</div>
+
+<!-- PIZARRA DE CAMBIOS -->
+<div class="modal" id="pizarra" onclick="if(event.target===this)cerrarPizarra()">
+  <div class="pizcard">
+    <h2>🔁 Pizarra táctica — cambios restantes: <span id="subsLeft">5</span></h2>
+    <p class="muted" id="pizMsg"></p>
+    <div id="pizXI"></div>
+    <div class="benchtag">🪑 SUPLENTES</div>
+    <div id="pizBench"></div>
+    <div class="optrow" style="margin-top:12px;">
+      <button class="btn" onclick="setEstilo(0)" id="e0">🛡 Defensivo</button>
+      <button class="btn" onclick="setEstilo(1)" id="e1">⚖ Equilibrado</button>
+      <button class="btn" onclick="setEstilo(2)" id="e2">🔥 Ofensivo</button>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:8px;">🛡 Replegado: cedés la pelota pero salís de contra (rinde con puntas rápidos) · 🔥 Línea alta: generás más, pero si tus centrales son lentos te corren la espalda · ⚖ Equilibrado: sin extremos</p>
+    <br><button class="btn big" onclick="cerrarPizarra()">✅ Listo, seguimos</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================== DATOS: PLANTILLAS HISTÓRICAS ==================
+// [nombre, pos, media]
+const SQUADS = [
+ {t:'Brasil', y:1970, f:'🇧🇷', p:[['Félix','ARQ',70],['Carlos Alberto','DEF',84],['Brito','DEF',78],['Piazza','DEF',77],['Everaldo','DEF',75],['Clodoaldo','MED',78],['Gérson','MED',84],['Rivelino','MED',85],['Jairzinho','DEL',85],['Tostão','DEL',83],['Pelé','DEL',93],['Paulo César','MED',76]]},
+ {t:'Holanda', y:1974, f:'🇳🇱', p:[['Jongbloed','ARQ',69],['Suurbier','DEF',76],['Rijsbergen','DEF',75],['Haan','DEF',78],['Krol','DEF',82],['Jansen','MED',76],['Neeskens','MED',84],['Van Hanegem','MED',83],['Rep','DEL',78],['Cruyff','DEL',93],['Rensenbrink','DEL',83]]},
+ {t:'Argentina', y:1978, f:'🇦🇷', p:[['Fillol','ARQ',82],['Olguín','DEF',74],['Galván','DEF',75],['Passarella','DEF',84],['Tarantini','DEF',75],['Ardiles','MED',83],['Gallego','MED',77],['Kempes','DEL',86],['Bertoni','DEL',78],['Luque','DEL',78],['Ortiz','DEL',74],['Houseman','DEL',76]]},
+ {t:'Brasil', y:1982, f:'🇧🇷', p:[['W. Peres','ARQ',67],['Leandro','DEF',78],['Oscar','DEF',76],['Luizinho','DEF',74],['Júnior','DEF',82],['Toninho Cerezo','MED',78],['Falcão','MED',83],['Sócrates','MED',85],['Zico','MED',90],['Serginho','DEL',68],['Éder','DEL',82]]},
+ {t:'Argentina', y:1986, f:'🇦🇷', p:[['Pumpido','ARQ',75],['Cuciuffo','DEF',70],['Brown','DEF',77],['Ruggeri','DEF',78],['Olarticoechea','DEF',74],['Giusti','MED',74],['Batista','MED',75],['Burruchaga','MED',78],['Enrique','MED',76],['Maradona','DEL',93],['Valdano','DEL',78]]},
+ {t:'Alemania', y:1990, f:'🇩🇪', p:[['Illgner','ARQ',77],['Berthold','DEF',75],['Kohler','DEF',78],['Augenthaler','DEF',78],['Brehme','DEF',82],['Buchwald','MED',77],['Häßler','MED',78],['Matthäus','MED',86],['Littbarski','MED',77],['Völler','DEL',83],['Klinsmann','DEL',82]]},
+ {t:'Brasil', y:1994, f:'🇧🇷', p:[['Taffarel','ARQ',78],['Jorginho','DEF',77],['Aldair','DEF',78],['M. Santos','DEF',76],['Branco','DEF',76],['Mauro Silva','MED',78],['Dunga','MED',78],['Zinho','MED',75],['Bebeto','DEL',83],['Romário','DEL',90],['Raí','MED',77]]},
+ {t:'Francia', y:1998, f:'🇫🇷', p:[['Barthez','ARQ',78],['Thuram','DEF',83],['Blanc','DEF',83],['Desailly','DEF',82],['Lizarazu','DEF',78],['Deschamps','MED',78],['Petit','MED',78],['Zidane','MED',92],['Djorkaeff','MED',78],['Henry','DEL',82],['Guivarc\'h','DEL',66]]},
+ {t:'Brasil', y:2002, f:'🇧🇷', p:[['Marcos','ARQ',78],['Cafú','DEF',83],['Lúcio','DEF',82],['Edmílson','DEF',77],['R. Carlos','DEF',84],['G. Silva','MED',77],['Kléberson','MED',75],['Ronaldinho','MED',85],['Rivaldo','DEL',86],['Ronaldo','DEL',92],['Denílson','DEL',76]]},
+ {t:'Italia', y:2006, f:'🇮🇹', p:[['Buffon','ARQ',86],['Zambrotta','DEF',78],['Cannavaro','DEF',86],['Materazzi','DEF',77],['Grosso','DEF',76],['Gattuso','MED',78],['Pirlo','MED',85],['Camoranesi','MED',76],['Totti','MED',83],['Toni','DEL',78],['Del Piero','DEL',83],['Inzaghi','DEL',77]]},
+ {t:'Portugal', y:2006, f:'🇵🇹', p:[['Ricardo','ARQ',75],['Miguel','DEF',75],['R. Carvalho','DEF',82],['Meira','DEF',74],['N. Valente','DEF',69],['Costinha','MED',70],['Maniche','MED',77],['Deco','MED',84],['Figo','MED',85],['C. Ronaldo','DEL',93],['Pauleta','DEL',77]]},
+ {t:'España', y:2010, f:'🇪🇸', p:[['Casillas','ARQ',85],['S. Ramos','DEF',83],['Piqué','DEF',82],['Puyol','DEF',84],['Capdevila','DEF',74],['Busquets','MED',83],['X. Alonso','MED',84],['Xavi','MED',91],['Iniesta','MED',90],['Villa','DEL',83],['Pedro','DEL',77],['Torres','DEL',78]]},
+ {t:'Uruguay', y:2010, f:'🇺🇾', p:[['Muslera','ARQ',76],['M. Pereira','DEF',74],['Lugano','DEF',78],['Godín','DEF',82],['Fucile','DEF',69],['Pérez','MED',70],['Arévalo Ríos','MED',74],['A. Pereira','MED',75],['Forlán','DEL',84],['Suárez','DEL',82],['Cavani','DEL',83]]},
+ {t:'Alemania', y:2014, f:'🇩🇪', p:[['Neuer','ARQ',90],['Lahm','DEF',84],['Boateng','DEF',82],['Hummels','DEF',83],['Höwedes','DEF',75],['Schweinsteiger','MED',84],['Kroos','MED',84],['Khedira','MED',77],['Özil','MED',83],['Müller','DEL',83],['Klose','DEL',82],['Götze','MED',78]]},
+ {t:'Argentina', y:2014, f:'🇦🇷', p:[['Romero','ARQ',75],['Zabaleta','DEF',78],['Demichelis','DEF',74],['Garay','DEF',77],['Rojo','DEF',74],['Mascherano','MED',82],['Biglia','MED',75],['Di María','MED',82],['Messi','DEL',93],['Higuaín','DEL',82],['Agüero','DEL',82],['Palacio','DEL',74]]},
+ {t:'Francia', y:2018, f:'🇫🇷', p:[['Lloris','ARQ',83],['Pavard','DEF',75],['Varane','DEF',83],['Umtiti','DEF',78],['L. Hernández','DEF',77],['Kanté','MED',84],['Pogba','MED',84],['Matuidi','MED',76],['Griezmann','DEL',83],['Mbappé','DEL',84],['Giroud','DEL',76]]},
+ {t:'Croacia', y:2018, f:'🇭🇷', p:[['Subašić','ARQ',76],['Vrsaljko','DEF',74],['Lovren','DEF',76],['Vida','DEF',74],['Strinić','DEF',68],['Brozović','MED',78],['Rakitić','MED',83],['Modrić','MED',86],['Rebić','DEL',76],['Mandžukić','DEL',78],['Perišić','DEL',78]]},
+ {t:'Argentina', y:2022, f:'🇦🇷', p:[['Dibu Martínez','ARQ',83],['Molina','DEF',75],['C. Romero','DEF',78],['Otamendi','DEF',78],['Tagliafico','DEF',75],['De Paul','MED',82],['Enzo Fernández','MED',83],['Mac Allister','MED',78],['Messi','DEL',93],['J. Álvarez','DEL',83],['Di María','DEL',78],['Paredes','MED',75]]},
+ {t:'Marruecos', y:2022, f:'🇲🇦', p:[['Bono','ARQ',78],['Hakimi','DEF',83],['Saïss','DEF',75],['Aguerd','DEF',76],['Mazraoui','DEF',75],['Amrabat','MED',78],['Ounahi','MED',75],['Ziyech','MED',78],['Boufal','DEL',74],['En-Nesyri','DEL',75],['Sabiri','MED',68]]},
+ {t:'Francia', y:2022, f:'🇫🇷', p:[['Lloris','ARQ',78],['Koundé','DEF',78],['Varane','DEF',78],['Upamecano','DEF',77],['T. Hernández','DEF',78],['Tchouaméni','MED',78],['Rabiot','MED',77],['Griezmann','MED',84],['Dembélé','DEL',82],['Mbappé','DEL',91],['Giroud','DEL',77]]},
+ {t:'Argentina', y:2026, f:'🇦🇷', p:[['Dibu Martínez','ARQ',84],['Molina','DEF',74],['C. Romero','DEF',78],['Lisandro M.','DEF',78],['Tagliafico','DEF',70],['De Paul','MED',78],['Enzo Fernández','MED',83],['Mac Allister','MED',82],['Messi','DEL',93],['J. Álvarez','DEL',83],['Lautaro','DEL',84],['Garnacho','DEL',77],['Mastantuono','MED',76]]},
+ {t:'Brasil', y:2026, f:'🇧🇷', p:[['Alisson','ARQ',83],['Danilo','DEF',74],['Marquinhos','DEF',78],['Gabriel M.','DEF',77],['Wendell','DEF',69],['Casemiro','MED',77],['Bruno G.','MED',78],['Paquetá','MED',77],['Raphinha','DEL',83],['Vinícius Jr','DEL',85],['Rodrygo','DEL',82],['Endrick','DEL',76]]},
+ {t:'España', y:2026, f:'🇪🇸', p:[['Unai Simón','ARQ',78],['Carvajal','DEF',78],['Le Normand','DEF',76],['Cubarsí','DEF',77],['Cucurella','DEF',76],['Rodri','MED',85],['Pedri','MED',83],['Fabián Ruiz','MED',78],['Lamine Yamal','DEL',84],['Morata','DEL',75],['Nico Williams','DEL',82]]},
+ {t:'Inglaterra', y:2026, f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:[['Pickford','ARQ',77],['Walker','DEF',76],['Stones','DEF',78],['Guéhi','DEF',76],['Shaw','DEF',74],['Rice','MED',83],['Bellingham','MED',84],['Foden','MED',83],['Saka','DEL',83],['Kane','DEL',84],['Palmer','DEL',82]]},
+ {t:'Inglaterra', y:1966, f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:[['Banks','ARQ',84],['Cohen','DEF',75],['J. Charlton','DEF',78],['Moore','DEF',90],['Wilson','DEF',75],['Stiles','MED',74],['B. Charlton','MED',85],['Ball','MED',78],['Peters','MED',77],['Hurst','DEL',83],['Hunt','DEL',76]]},
+ {t:'Brasil', y:1958, f:'🇧🇷', p:[['Gilmar','ARQ',78],['D. Santos','DEF',83],['Bellini','DEF',75],['Orlando','DEF',74],['N. Santos','DEF',83],['Zito','MED',77],['Didí','MED',84],['Zagallo','MED',78],['Garrincha','DEL',91],['Vavá','DEL',82],['Pelé','DEL',93]]},
+ {t:'Portugal', y:1966, f:'🇵🇹', p:[['J. Pereira','ARQ',68],['Morais','DEF',68],['Baptista','DEF',69],['Vicente','DEF',69],['Hilário','DEF',68],['Graça','MED',74],['Coluna','MED',82],['J. Augusto','MED',75],['Simões','DEL',77],['Eusébio','DEL',91],['Torres','DEL',77]]},
+ {t:'Alemania', y:1974, f:'🇩🇪', p:[['Maier','ARQ',83],['Vogts','DEF',78],['Schwarzenbeck','DEF',74],['Beckenbauer','DEF',91],['Breitner','DEF',83],['Bonhof','MED',78],['Overath','MED',82],['Hoeneß','MED',77],['Grabowski','DEL',76],['G. Müller','DEL',90],['Hölzenbein','DEL',75]]},
+ {t:'Polonia', y:1974, f:'🇵🇱', p:[['Tomaszewski','ARQ',78],['Szymanowski','DEF',70],['Gorgoń','DEF',74],['Żmuda','DEF',75],['Musiał','DEF',68],['Kasperczak','MED',74],['Deyna','MED',82],['Maszczyk','MED',69],['Lato','DEL',83],['Szarmach','DEL',78],['Gadocha','DEL',77]]},
+ {t:'Escocia', y:1978, f:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', p:[['Rough','ARQ',66],['Jardine','DEF',68],['Forsyth','DEF',67],['Buchan','DEF',70],['Donachie','DEF',67],['Rioch','MED',70],['Gemmill','MED',76],['Souness','MED',78],['Dalglish','DEL',84],['Jordan','DEL',74],['Hartford','MED',68]]},
+ {t:'Italia', y:1982, f:'🇮🇹', p:[['Zoff','ARQ',85],['Gentile','DEF',78],['Scirea','DEF',83],['Collovati','DEF',75],['Cabrini','DEF',78],['Oriali','MED',70],['Tardelli','MED',82],['Antognoni','MED',78],['Conti','DEL',78],['P. Rossi','DEL',83],['Graziani','DEL',74]]},
+ {t:'El Salvador', y:1982, f:'🇸🇻', p:[['Mora','ARQ',59],['Osorto','DEF',56],['Jovel','DEF',57],['Recinos','DEF',56],['Castillo','DEF',55],['Rugamas','MED',55],['Huezo','MED',58],['Fagoaga','MED',54],['Rivas','DEL',59],['Zapata','DEL',57],['Ramírez','DEL',58]]},
+ {t:'Francia', y:1986, f:'🇫🇷', p:[['Bats','ARQ',77],['Amoros','DEF',78],['Battiston','DEF',76],['Bossis','DEF',76],['Ayache','DEF',69],['Fernández','MED',77],['Tigana','MED',83],['Giresse','MED',83],['Platini','MED',90],['Rocheteau','DEL',78],['Papin','DEL',77]]},
+ {t:'Dinamarca', y:1986, f:'🇩🇰', p:[['Rasmussen','ARQ',68],['Busk','DEF',69],['M. Olsen','DEF',77],['I. Nielsen','DEF',68],['Sivebæk','DEF',70],['Lerby','MED',77],['J. Olsen','MED',76],['Arnesen','MED',78],['M. Laudrup','DEL',83],['Elkjær','DEL',82],['Berggreen','DEL',70]]},
+ {t:'URSS', y:1986, f:'🚩', p:[['Dasaev','ARQ',82],['Bessonov','DEF',74],['Chivadze','DEF',75],['Demianenko','DEF',76],['Kuznetsov','DEF',74],['Aleinikov','MED',75],['Zavarov','MED',78],['Rats','MED',76],['Yakovenko','MED',70],['Belanov','DEL',78],['Blokhin','DEL',78]]},
+ {t:'México', y:1986, f:'🇲🇽', p:[['Larios','ARQ',70],['Amador','DEF',66],['Quirarte','DEF',69],['F. Cruz','DEF',66],['Servín','DEF',67],['Muñoz','MED',75],['Aguirre','MED',74],['España','MED',70],['Boy','MED',70],['Negrete','DEL',77],['H. Sánchez','DEL',83]]},
+ {t:'Camerún', y:1990, f:'🇨🇲', p:[['N\'Kono','ARQ',78],['Tataw','DEF',66],['Massing','DEF',64],['Kunde','DEF',67],['Ebwellé','DEF',66],['Mbouh','MED',69],['Maboang','MED',64],['M\'Fede','MED',66],['Makanaky','DEL',69],['Oman-Biyik','DEL',75],['Milla','DEL',78]]},
+ {t:'Yugoslavia', y:1990, f:'🔵', p:[['Ivković','ARQ',75],['Stanojković','DEF',67],['Hadžibegić','DEF',69],['Spasić','DEF',68],['Jozić','DEF',68],['Sušić','MED',78],['Stojković','MED',82],['Prosinečki','MED',78],['Savićević','MED',78],['Vujović','DEL',74],['Pančev','DEL',77]]},
+ {t:'Argentina', y:1990, f:'🇦🇷', p:[['Goycochea','ARQ',78],['Simón','DEF',69],['Ruggeri','DEF',82],['Serrizuela','DEF',66],['Sensini','DEF',70],['Basualdo','MED',67],['Giusti','MED',69],['Burruchaga','MED',77],['Calderón','MED',69],['Maradona','DEL',93],['Caniggia','DEL',78]]},
+ {t:'Irlanda', y:1990, f:'🇮🇪', p:[['Bonner','ARQ',70],['Morris','DEF',66],['McCarthy','DEF',69],['Moran','DEF',68],['Staunton','DEF',69],['Houghton','MED',70],['McGrath','MED',77],['Townsend','MED',69],['Sheedy','MED',69],['Aldridge','DEL',69],['Quinn','DEL',68]]},
+ {t:'Colombia', y:1994, f:'🇨🇴', p:[['Córdoba','ARQ',75],['Herrera','DEF',69],['Escobar','DEF',70],['Perea','DEF',66],['W. Pérez','DEF',64],['G. Gómez','MED',70],['Álvarez','MED',68],['Rincón','MED',78],['Valderrama','MED',83],['Asprilla','DEL',78],['De Ávila','DEL',70]]},
+ {t:'Bolivia', y:1994, f:'🇧🇴', p:[['Trucco','ARQ',64],['Sandy','DEF',64],['Rimba','DEF',62],['Quinteros','DEF',62],['Soria','DEF',63],['Cristaldo','MED',64],['E. Sánchez','MED',69],['Etcheverry','MED',75],['Baldivieso','MED',66],['Ramallo','DEL',64],['W. Moreno','DEL',62]]},
+ {t:'Suecia', y:1994, f:'🇸🇪', p:[['Ravelli','ARQ',77],['R. Nilsson','DEF',69],['P. Andersson','DEF',70],['Björklund','DEF',69],['Ljung','DEF',66],['Schwarz','MED',70],['Thern','MED',75],['Ingesson','MED',69],['K. Andersson','DEL',76],['Dahlin','DEL',77],['Brolin','DEL',82]]},
+ {t:'Arabia Saudita', y:1994, f:'🇸🇦', p:[['Al-Deayea','ARQ',70],['Al-Khlaiwi','DEF',63],['Madani','DEF',62],['Al-Jahani','DEF',61],['Zubromawi','DEF',62],['Al-Bishi','MED',64],['Amin','MED',63],['Al-Owairan','MED',75],['Al-Muwallid','MED',66],['Al-Jaber','DEL',70],['Falatah','DEL',61]]},
+ {t:'Nigeria', y:1994, f:'🇳🇬', p:[['Rufai','ARQ',74],['Eguavoen','DEF',64],['Okechukwu','DEF',69],['Iroha','DEF',64],['Keshi','DEF',68],['Oliseh','MED',74],['Okocha','MED',78],['Finidi','DEL',76],['Amokachi','DEL',75],['Yekini','DEL',78],['Amunike','DEL',74]]},
+ {t:'Argentina', y:1998, f:'🇦🇷', p:[['Roa','ARQ',78],['Zanetti','DEF',82],['Ayala','DEF',78],['Chamot','DEF',74],['Sensini','DEF',70],['Almeyda','MED',74],['Simeone','MED',78],['Verón','MED',82],['Ortega','MED',82],['C. López','DEL',78],['Batistuta','DEL',84]]},
+ {t:'Croacia', y:1998, f:'🇭🇷', p:[['Ladić','ARQ',74],['Štimac','DEF',74],['Bilić','DEF',75],['Šimić','DEF',74],['Jarni','DEF',75],['Asanović','MED',77],['Prosinečki','MED',77],['Boban','MED',82],['Stanić','DEL',70],['Šuker','DEL',83],['Vlaović','DEL',69]]},
+ {t:'Holanda', y:1998, f:'🇳🇱', p:[['Van der Sar','ARQ',78],['Reiziger','DEF',74],['Stam','DEF',78],['F. de Boer','DEF',78],['Numan','DEF',74],['Davids','MED',78],['Seedorf','MED',78],['Cocu','MED',76],['Overmars','DEL',78],['Bergkamp','DEL',85],['Kluivert','DEL',82]]},
+ {t:'Senegal', y:2002, f:'🇸🇳', p:[['Sylva','ARQ',67],['Coly','DEF',66],['Daf','DEF',64],['Diatta','DEF',69],['P. Cissé','DEF',67],['Diao','MED',68],['P.B. Diop','MED',70],['Fadiga','MED',74],['N\'Diaye','MED',64],['H. Camara','DEL',75],['Diouf','DEL',77]]},
+ {t:'Corea del Sur', y:2002, f:'🇰🇷', p:[['Lee Woon-jae','ARQ',70],['Choi Jin-cheul','DEF',67],['Hong Myung-bo','DEF',77],['Kim Tae-young','DEF',67],['Lee Young-pyo','DEF',69],['Kim Nam-il','MED',68],['Yoo Sang-chul','MED',69],['Park Ji-sung','MED',76],['Lee Chun-soo','DEL',68],['Seol Ki-hyeon','DEL',68],['Ahn Jung-hwan','DEL',74]]},
+ {t:'Estados Unidos', y:2002, f:'🇺🇸', p:[['Friedel','ARQ',77],['Hejduk','DEF',64],['Pope','DEF',67],['Agoos','DEF',64],['Sanneh','DEF',64],['Mastroeni','MED',64],['O\'Brien','MED',68],['Reyna','MED',74],['Beasley','DEL',68],['Donovan','DEL',75],['McBride','DEL',70]]},
+ {t:'China', y:2002, f:'🇨🇳', p:[['Jiang Jin','ARQ',62],['Wu Chengying','DEF',59],['Fan Zhiyi','DEF',64],['Li Weifeng','DEF',61],['Sun Jihai','DEF',63],['Li Tie','MED',64],['Ma Mingyu','MED',62],['Li Xiaopeng','MED',60],['Hao Haidong','DEL',64],['Yang Chen','DEL',60],['Qu Bo','DEL',60]]},
+ {t:'Francia', y:2006, f:'🇫🇷', p:[['Barthez','ARQ',77],['Sagnol','DEF',76],['Thuram','DEF',82],['Gallas','DEF',78],['Abidal','DEF',76],['Makélélé','MED',83],['Vieira','MED',82],['Ribéry','MED',78],['Zidane','MED',86],['Malouda','DEL',75],['Henry','DEL',84]]},
+ {t:'Australia', y:2006, f:'🇦🇺', p:[['Schwarzer','ARQ',76],['Neill','DEF',70],['C. Moore','DEF',68],['Chipperfield','DEF',66],['Wilkshire','DEF',64],['Grella','MED',68],['Culina','MED',68],['Cahill','MED',76],['Bresciano','MED',70],['Kewell','DEL',77],['Viduka','DEL',76]]},
+ {t:'Costa de Marfil', y:2006, f:'🇨🇮', p:[['Tizié','ARQ',66],['Eboué','DEF',69],['K. Touré','DEF',77],['Méïté','DEF',67],['Boka','DEF',66],['Zokora','MED',70],['Y. Touré','MED',77],['Akalé','MED',66],['Kalou','DEL',70],['Drogba','DEL',84],['Dindane','DEL',67]]},
+ {t:'Holanda', y:2010, f:'🇳🇱', p:[['Stekelenburg','ARQ',75],['Van der Wiel','DEF',69],['Heitinga','DEF',70],['Mathijsen','DEF',69],['Van Bronckhorst','DEF',75],['Van Bommel','MED',76],['De Jong','MED',74],['Sneijder','MED',83],['Robben','DEL',83],['Van Persie','DEL',82],['Kuyt','DEL',75]]},
+ {t:'Ghana', y:2010, f:'🇬🇭', p:[['Kingson','ARQ',66],['Pantsil','DEF',66],['J. Mensah','DEF',69],['Vorsah','DEF',66],['Sarpei','DEF',64],['Annan','MED',68],['K. Asamoah','MED',70],['K.P. Boateng','MED',74],['A. Ayew','DEL',74],['Gyan','DEL',77],['Muntari','MED',74]]},
+ {t:'Nueva Zelanda', y:2010, f:'🇳🇿', p:[['Paston','ARQ',62],['Reid','DEF',66],['Nelsen','DEF',68],['B. Smith','DEF',62],['Lochhead','DEF',60],['Bertos','MED',61],['Elliott','MED',62],['Vicelich','MED',60],['Fallon','DEL',63],['Smeltz','DEL',64],['Killen','DEL',61]]},
+ {t:'Chile', y:2014, f:'🇨🇱', p:[['Bravo','ARQ',77],['Isla','DEF',70],['Medel','DEF',76],['Jara','DEF',69],['Mena','DEF',68],['M. Díaz','MED',74],['Aránguiz','MED',75],['Vidal','MED',82],['Valdivia','MED',70],['A. Sánchez','DEL',83],['E. Vargas','DEL',74]]},
+ {t:'Colombia', y:2014, f:'🇨🇴', p:[['Ospina','ARQ',76],['Zúñiga','DEF',69],['Yepes','DEF',69],['C. Zapata','DEF',69],['Armero','DEF',68],['C. Sánchez','MED',69],['Aguilar','MED',68],['Cuadrado','MED',77],['James','MED',84],['T. Gutiérrez','DEL',69],['Bacca','DEL',70]]},
+ {t:'Costa Rica', y:2014, f:'🇨🇷', p:[['Navas','ARQ',82],['Gamboa','DEF',66],['Acosta','DEF',64],['G. González','DEF',66],['Umaña','DEF',64],['Duarte','DEF',64],['Borges','MED',68],['Tejeda','MED',64],['B. Ruiz','DEL',70],['Bolaños','MED',66],['Campbell','DEL',70]]},
+ {t:'Bélgica', y:2018, f:'🇧🇪', p:[['Courtois','ARQ',84],['Alderweireld','DEF',78],['Kompany','DEF',78],['Vertonghen','DEF',78],['Meunier','DEF',74],['Witsel','MED',76],['De Bruyne','MED',84],['Chadli','MED',68],['E. Hazard','DEL',84],['Mertens','DEL',77],['Lukaku','DEL',83]]},
+ {t:'Rusia', y:2018, f:'🇷🇺', p:[['Akinfeev','ARQ',75],['M. Fernandes','DEF',68],['Ignashevich','DEF',67],['Kutepov','DEF',64],['Zhirkov','DEF',67],['Zobnin','MED',66],['Golovin','MED',75],['Cheryshev','MED',69],['Samedov','MED',66],['Dzyuba','DEL',74],['Smolov','DEL',68]]},
+ {t:'Islandia', y:2018, f:'🇮🇸', p:[['Halldórsson','ARQ',66],['Sævarsson','DEF',63],['Árnason','DEF',64],['R. Sigurdsson','DEF',66],['Magnússon','DEF',63],['Gunnarsson','MED',66],['G. Sigurdsson','MED',75],['Hallfredsson','MED',64],['Gíslason','MED',62],['Finnbogason','DEL',66],['Bjarnason','DEL',64]]},
+ {t:'Perú', y:2018, f:'🇵🇪', p:[['Gallese','ARQ',69],['Advíncula','DEF',67],['C. Ramos','DEF',66],['A. Rodríguez','DEF',66],['Trauco','DEF',64],['Yotún','MED',67],['Tapia','MED',66],['E. Flores','MED',68],['Carrillo','DEL',68],['Cueva','MED',69],['Guerrero','DEL',75]]},
+ {t:'Japón', y:2022, f:'🇯🇵', p:[['Gonda','ARQ',67],['H. Sakai','DEF',67],['Yoshida','DEF',69],['Tomiyasu','DEF',74],['Nagatomo','DEF',66],['W. Endo','MED',74],['Morita','MED',68],['Kamada','MED',75],['Kubo','DEL',75],['Mitoma','DEL',77],['Maeda','DEL',67]]},
+ {t:'Portugal', y:2022, f:'🇵🇹', p:[['Diogo Costa','ARQ',77],['Cancelo','DEF',78],['Pepe','DEF',76],['Rúben Dias','DEF',82],['Guerreiro','DEF',75],['Rúben Neves','MED',77],['Bruno Fernandes','MED',82],['Bernardo Silva','MED',83],['Otávio','MED',69],['C. Ronaldo','DEL',93],['João Félix','DEL',76]]},
+ {t:'Qatar', y:2022, f:'🇶🇦', p:[['Barsham','ARQ',63],['Pedro Miguel','DEF',61],['Khoukhi','DEF',62],['B. Hassan','DEF',61],['H. Ahmed','DEF',60],['Hatem','MED',63],['Boudiaf','MED',63],['Al-Haydos','MED',64],['Afif','DEL',67],['Almoez Ali','DEL',64],['Muntari','DEL',60]]},
+ {t:'Canadá', y:2022, f:'🇨🇦', p:[['Borjan','ARQ',66],['Johnston','DEF',64],['S. Vitória','DEF',64],['K. Miller','DEF',64],['Adekugbe','DEF',64],['Hutchinson','MED',66],['Eustáquio','MED',67],['Buchanan','DEL',69],['J. David','DEL',75],['A. Davies','DEL',77],['Larin','DEL',66]]},
+ {t:'Gales', y:2022, f:'🏴󠁧󠁢󠁷󠁬󠁳󠁿', p:[['Hennessey','ARQ',66],['Ampadu','DEF',66],['Rodon','DEF',66],['B. Davies','DEF',67],['N. Williams','DEF',64],['Ramsey','MED',70],['J. Allen','MED',66],['H. Wilson','MED',66],['D. James','DEL',67],['Bale','DEL',75],['K. Moore','DEL',64]]},
+ {t:'Serbia', y:2022, f:'🇷🇸', p:[['V. Milinković-Savić','ARQ',68],['Pavlović','DEF',66],['Veljković','DEF',64],['Milenković','DEF',70],['Mladenović','DEF',64],['Gudelj','MED',66],['S. Milinković-Savić','MED',77],['Tadić','MED',77],['Kostić','MED',74],['Vlahović','DEL',77],['Mitrović','DEL',77]]},
+ {t:'Ecuador', y:2022, f:'🇪🇨', p:[['Galíndez','ARQ',64],['Preciado','DEF',64],['F. Torres','DEF',67],['Hincapié','DEF',70],['Estupiñán','DEF',70],['J. Méndez','MED',66],['M. Caicedo','MED',75],['Plata','DEL',68],['Ibarra','DEL',66],['E. Valencia','DEL',70],['Sarmiento','MED',64]]},
+ {t:'Estados Unidos', y:2026, f:'🇺🇸', p:[['M. Turner','ARQ',70],['Dest','DEF',70],['C. Richards','DEF',69],['M. Robinson','DEF',70],['A. Robinson','DEF',74],['T. Adams','MED',74],['McKennie','MED',74],['Musah','MED',69],['Pulisic','DEL',78],['Balogun','DEL',69],['T. Weah','DEL',70]]},
+ {t:'México', y:2026, f:'🇲🇽', p:[['Malagón','ARQ',69],['J. Sánchez','DEF',66],['C. Vásquez','DEF',67],['C. Montes','DEF',68],['J. Gallardo','DEF',66],['E. Álvarez','MED',74],['L. Chávez','MED',66],['Lozano','DEL',75],['S. Giménez','DEL',76],['R. Jiménez','DEL',70],['O. Pineda','MED',66]]},
+ {t:'Zaire', y:1974, f:'🇨🇩', p:[['Kazadi','ARQ',56],['Mwepu','DEF',54],['Mukombo','DEF',55],['Bwanga','DEF',60],['Lobilo','DEF',56],['Mana','MED',55],['Kidumu','MED',56],['Mayanga','MED',54],['Ndaye','DEL',60],['Kakoko','DEL',57],['Kibonge','MED',55]]},
+ {t:'Haití', y:1974, f:'🇭🇹', p:[['Francillon','ARQ',58],['Bayonne','DEF',54],['Auguste','DEF',55],['Nazaire','DEF',54],['Ducoste','DEF',53],['Antoine','MED',55],['Vorbe','MED',60],['Désir','MED',56],['Sannon','DEL',64],['Saint-Vil','DEL',56],['Barthélémy','DEL',55]]},
+ {t:'Nueva Zelanda', y:1982, f:'🇳🇿', p:[['Van Hattum','ARQ',55],['Dods','DEF',54],['Herbert','DEF',56],['Elrick','DEF',54],['Boath','DEF',53],['Cole','MED',55],['Cresswell','MED',56],['Sumner','MED',61],['Wooddin','DEL',60],['Rufer','DEL',63],['McClure','DEL',53]]},
+ {t:'Kuwait', y:1982, f:'🇰🇼', p:[['Al-Tarabulsi','ARQ',57],['Mubarak','DEF',54],['Mayoof','DEF',54],['Mohammed','DEF',55],['Al-Mubarak','DEF',53],['Al-Buloushi','MED',55],['Al-Houti','MED',58],['Karam','MED',56],['Al-Dakhil','DEL',63],['Al-Anberi','DEL',56],['Marzouq','DEL',55]]},
+ {t:'Irak', y:1986, f:'🇮🇶', p:[['Hammoudi','ARQ',58],['Allawi','DEF',56],['Hashim','DEF',55],['Mohammed','DEF',54],['Shaker','DEF',57],['Hussein','MED',56],['Saddam','MED',54],['Gorgis','MED',58],['Ahmed Radhi','DEL',67],['Hussein Saeed','DEL',65],['Hanoon','DEL',54]]},
+ {t:'Emiratos Árabes', y:1990, f:'🇦🇪', p:[['Faraj','ARQ',55],['Jumaa','DEF',53],['K. Mubarak','DEF',56],['Abdulrahman','DEF',54],['Mohamed','DEF',53],['Abdullah','MED',55],['F. Mubarak','MED',56],['Al-Haddad','MED',54],['Al-Talyani','DEL',64],['Bilal','DEL',57],['Hussain','DEL',54]]},
+ {t:'Grecia', y:1994, f:'🇬🇷', p:[['Minou','ARQ',57],['Apostolakis','DEF',59],['Kolitsidakis','DEF',55],['Manolas','DEF',60],['Karagiannis','DEF',56],['Tsalouchidis','MED',60],['Nioplias','MED',57],['Tsiantakis','MED',56],['Saravakos','DEL',64],['Machlas','DEL',60],['Mitropoulos','DEL',55]]},
+ {t:'Jamaica', y:1998, f:'🇯🇲', p:[['Barrett','ARQ',58],['Goodison','DEF',57],['Sinclair','DEF',56],['Lowe','DEF',55],['Malcolm','DEF',54],['Gardner','MED',60],['Whitmore','MED',63],['Earle','MED',59],['Cargill','MED',55],['Hall','DEL',58],['Burton','DEL',57]]},
+ {t:'Trinidad y Tobago', y:2006, f:'🇹🇹', p:[['Hislop','ARQ',65],['Edwards','DEF',58],['Lawrence','DEF',59],['Sancho','DEF',55],['Gray','DEF',54],['Theobald','MED',54],['Birchall','MED',58],['Whitley','MED',57],['Yorke','MED',68],['Stern John','DEL',61],['Latapy','DEL',63]]},
+ {t:'Angola', y:2006, f:'🇦🇴', p:[['João Ricardo','ARQ',59],['Jamba','DEF',56],['Kali','DEF',57],['Loco','DEF',54],['Delgado','DEF',55],['André','MED',56],['Mendonça','MED',60],['Figueiredo','MED',55],['Zé Kalanga','MED',58],['Akwá','DEL',62],['Flávio','DEL',60]]},
+ {t:'Togo', y:2006, f:'🇹🇬', p:[['Agassa','ARQ',58],['Nibombé','DEF',56],['Abalo','DEF',55],['Tchangai','DEF',54],['Assemoassa','DEF',53],['Romao','MED',58],['Mamam','MED',56],['Salifou','MED',57],['Dossevi','DEL',58],['Adebayor','DEL',70],['Kader','DEL',60]]},
+ {t:'Corea del Norte', y:2010, f:'🇰🇵', p:[['Ri Myong-guk','ARQ',58],['Cha Jong-hyok','DEF',54],['Ri Jun-il','DEF',56],['Ri Kwang-chon','DEF',55],['Ji Yun-nam','DEF',56],['Pak Nam-chol','MED',56],['Mun In-guk','MED',57],['An Yong-hak','MED',58],['Hong Yong-jo','MED',61],['Jong Tae-se','DEL',66],['Choe Kum-chol','DEL',54]]},
+ {t:'Honduras', y:2010, f:'🇭🇳', p:[['Valladares','ARQ',63],['Sabillón','DEF',56],['Chávez','DEF',57],['Figueroa','DEF',64],['Izaguirre','DEF',62],['W. Palacios','MED',68],['Guevara','MED',62],['Espinoza','MED',58],['Turcios','MED',56],['Suazo','DEL',66],['Pavón','DEL',61]]},
+ {t:'Panamá', y:2018, f:'🇵🇦', p:[['Penedo','ARQ',64],['Murillo','DEF',58],['R. Torres','DEF',61],['Escobar','DEF',57],['E. Davis','DEF',56],['A. Gómez','MED',57],['Cooper','MED',56],['Godoy','MED',59],['Bárcenas','MED',56],['B. Pérez','DEL',59],['Tejada','DEL',58]]},
+];
+
+// Rivales del mundial: [nombre, bandera, fuerza]
+const RIVALS = [
+ ['Brasil','🇧🇷',86],['Francia','🇫🇷',86],['Argentina','🇦🇷',90],['España','🇪🇸',85],['Inglaterra','🏴󠁧󠁢󠁥󠁮󠁧󠁿',83],
+ ['Alemania','🇩🇪',82],['Portugal','🇵🇹',83],['Países Bajos','🇳🇱',78],['Italia','🇮🇹',78],['Uruguay','🇺🇾',76],
+ ['Croacia','🇭🇷',76],['Colombia','🇨🇴',76],['Marruecos','🇲🇦',76],['México','🇲🇽',70],['Japón','🇯🇵',70],
+ ['Estados Unidos','🇺🇸',69],['Senegal','🇸🇳',70],['Suiza','🇨🇭',70],['Dinamarca','🇩🇰',69],['Corea del Sur','🇰🇷',67],
+ ['Ecuador','🇪🇨',68],['Polonia','🇵🇱',67],['Serbia','🇷🇸',66],['Australia','🇦🇺',64],['Ghana','🇬🇭',64],
+ ['Camerún','🇨🇲',64],['Canadá','🇨🇦',64],['Gales','🏴󠁧󠁢󠁷󠁬󠁳󠁿',64],['Túnez','🇹🇳',63],['Costa Rica','🇨🇷',61],['Arabia Saudita','🇸🇦',62],['Qatar','🇶🇦',60],
+];
+
+const FORMS = {'4-3-3':{DEF:4,MED:3,DEL:3}, '4-4-2':{DEF:4,MED:4,DEL:2}, '3-5-2':{DEF:3,MED:5,DEL:2}, '4-2-3-1':{DEF:4,MED:5,DEL:1}};
+const ESTILOS = ['🛡 Defensivo','⚖ Equilibrado','🔥 Ofensivo'];
+const MODOS = [
+  {n:'📊 Clásico', d:'Ves la media de cada jugador. Elegís con datos.'},
+  {n:'🧠 Almanaque', d:'Stats ocultas: drafteás de memoria, como un verdadero enfermo del fútbol. +10% de gloria al compartir.'}
+];
+
+// Ídolos eternos: marco dorado al draftearlos
+const LEYENDAS = new Set(['Pelé','Garrincha','Didí','Eusébio','B. Charlton','Moore','Banks','Cruyff','Beckenbauer','G. Müller','Kempes','Passarella','Maradona','Zico','Sócrates','Platini','Matthäus','Romário','Zidane','Ronaldo','Rivaldo','Ronaldinho','Cafú','R. Carlos','Buffon','Cannavaro','Pirlo','Totti','Xavi','Iniesta','Casillas','Forlán','Suárez','Neuer','Messi','Modrić','Mbappé','C. Ronaldo','Batistuta','Valderrama','H. Sánchez','Milla','Okocha','Šuker','Bergkamp','Henry','De Bruyne','E. Hazard','Drogba','Bale','Zoff']);
+
+// Escuelas nacionales: matizan los atributos de cada jugador
+const NPROF = {
+  'Brasil':{cre:6,pac:2}, 'Italia':{def:6,phy:2}, 'Alemania':{phy:5,sta:.25}, 'Argentina':{cre:5},
+  'España':{pas:6}, 'Holanda':{pas:4,cre:2}, 'Inglaterra':{phy:4,sta:.1}, 'Francia':{pac:3,phy:2},
+  'Camerún':{pac:4,phy:3}, 'Nigeria':{pac:4,phy:2}, 'Senegal':{pac:4,phy:3}, 'Ghana':{pac:3,phy:3},
+  'Portugal':{cre:3,pas:2}, 'Croacia':{pas:3,cre:2}, 'Uruguay':{def:3,phy:2}, 'México':{pas:2,cre:2},
+  'Japón':{pas:3,sta:.15}, 'Corea del Sur':{pac:2,sta:.2}, 'Colombia':{cre:4}, 'Yugoslavia':{cre:4,pas:2},
+};
+function hashN(str){ let h = 7; for (const c of str) h = (h * 31 + c.codePointAt(0)) % 9973; return h; }
+// atributos: pac velocidad · pas pase · cre creatividad · fin definición · def marca · phy físico
+function attrs(j){
+  if (j.at) return j.at;
+  const r = j.r, h = hashN(j.n + (j.from || ''));
+  const v = k => ((h >> k) % 7) - 3; // sello propio determinístico -3..+3
+  let a;
+  if (j.pos === 'ARQ') a = {pac:r-18, pas:r-14, cre:r-16, fin:30, def:r+2, phy:r};
+  else if (j.pos === 'DEF') a = {pac:r-7, pas:r-8, cre:r-11, fin:r-16, def:r+2, phy:r};
+  else if (j.pos === 'MED') a = {pac:r-5, pas:r+1, cre:r, fin:r-8, def:r-9, phy:r-4};
+  else a = {pac:r, pas:r-6, cre:r-3, fin:r+2, def:r-20, phy:r-3};
+  const pais = (j.from || '').replace(/ \d+$/, '');
+  const np = NPROF[pais] || {};
+  for (const k of ['pac','pas','cre','fin','def','phy']) a[k] = Math.max(35, Math.min(99, a[k] + (np[k] || 0) + v(['pac','pas','cre','fin','def','phy'].indexOf(k))));
+  if (LEYENDAS.has(j.n)){ a.cre = Math.min(99, a.cre + 4); a.pas = Math.min(99, a.pas + 2); }
+  a.sta = np.sta || 0;
+  j.at = a;
+  return a;
+}
+
+function sinergias(){
+  const all = G.xi.filter(j => !j.roja);
+  const S = {quim:0, lista:[]};
+  if (!all.length) return S;
+  // 🤝 química real: compañeros del mismo plantel histórico se entienden de memoria
+  const cnt = {};
+  all.forEach(j => cnt[j.from] = (cnt[j.from] || 0) + 1);
+  for (const [from, c] of Object.entries(cnt)) if (c >= 3){
+    const b = (c - 2) * 0.7;
+    S.quim += b;
+    S.lista.push(`🤝 Núcleo ${from}: ${c} compañeros de plantel (+${b.toFixed(1)} de química a todo el equipo)`);
+  }
+  // 🔬 lectura táctica EMERGENTE: sale de los atributos reales de tus jugadores
+  const by = p => all.filter(j => j.pos === p);
+  const avg = (arr, k) => arr.length ? arr.reduce((a, j) => a + attrs(j)[k], 0) / arr.length : 0;
+  const delPac = avg(by('DEL'), 'pac'), delFin = avg(by('DEL'), 'fin');
+  const defPac = avg(by('DEF'), 'pac'), defDef = avg(by('DEF'), 'def');
+  const medCre = avg(by('MED'), 'cre'), medPas = avg(by('MED'), 'pas');
+  if (delPac >= 86) S.lista.push('⚡ Puntas con fuego: letales de contragolpe — un bloque bajo (🛡) los lanza a la espalda del rival');
+  else if (by('DEL').length && delPac < 76) S.lista.push('🐢 Ataque lento: vivís de la elaboración, no esperes ganar de contra');
+  if (medCre >= 86) S.lista.push('🎩 Mediocampo creativo: inventa ocasiones contra cualquier bloque');
+  if (medPas >= 86) S.lista.push('🎼 Dueños de la pelota: tu medio sostiene la posesión');
+  if (by('DEF').length && defPac < 74) S.lista.push('⚠️ Centrales lentos: la línea alta (🔥) te deja vendido a los pelotazos');
+  if (defDef >= 86) S.lista.push('🧱 Defensa de élite: replegado (🛡) sos casi impasable');
+  if (!by('DEL').length && by('MED').length){
+    const f9 = [...by('MED')].sort((a, b) => attrs(b).cre - attrs(a).cre)[0];
+    S.lista.push(`🎭 Falso 9: ${f9.n} flota entre líneas — funciona porque su creatividad (${attrs(f9).cre}) confunde a los centrales`);
+  }
+  return S;
+}
+// ================== ESTADO GLOBAL ==================
+const $ = id => document.getElementById(id);
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+
+let G = {
+  form:'4-3-3', estilo:1, modo:0, carrera:false, torneo:'mundial',
+  xi:[], banco:[],            // {n,pos,r,from,sta,gol}
+  rerolls:3, squadIx:null, usadosSquad:new Set(),
+  fase:0, FASES:['Grupos','Octavos','Cuartos','Semifinal','FINAL'], koMin:[0,68,74,79,83], totalFechas:3,
+  grupo:[], tabla:{}, fechas:0,
+  rival:null, camino:[],
+  golesTotales:{}, partidosJugados:0,
+};
+
+const FASES = ['Grupos','Octavos','Cuartos','Semifinal','FINAL'];
+const EURO = ['Francia','España','Inglaterra','Alemania','Italia','Portugal','Países Bajos','Croacia','Polonia','Serbia','Suiza','Dinamarca','Gales'];
+const TT = {euro:'🇪🇺 Euro', clasif:'🎟️ Elim', mundial:'🌍 Mundial'};
+const TNOM = {euro:'EUROCOPA', clasif:'CLASIFICACIÓN AL MUNDIAL', mundial:'MUNDIAL'};
+
+// ================== PANTALLAS ==================
+function ir(scr){
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  $(scr).classList.add('on');
+  scrollTo({top:0, behavior:'smooth'});
+}
+function campInfo(txt){ $('campInfo').textContent = txt; }
+let toastT = null;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 2800);
+}
+
+// ================== HOME ==================
+function renderHome(){
+  $('optForm').innerHTML = Object.keys(FORMS).map(f =>
+    `<div class="opt ${G.form===f?'sel':''}" onclick="G.form='${f}';renderHome()">${f}</div>`).join('');
+  $('optStyle').innerHTML = ESTILOS.map((e,i) =>
+    `<div class="opt ${G.estilo===i?'sel':''}" onclick="G.estilo=${i};renderHome()">${e}</div>`).join('');
+  $('optMode').innerHTML = MODOS.map((m,i) =>
+    `<div class="opt ${G.modo===i?'sel':''}" onclick="G.modo=${i};renderHome()">${m.n}</div>`).join('');
+  $('modeDesc').textContent = MODOS[G.modo].d;
+}
+
+// ================== DRAFT ==================
+const BANCO_N = 7;
+function slotsNecesarios(){
+  const f = FORMS[G.form];
+  return [['ARQ',1],['DEF',f.DEF],['MED',f.MED],['DEL',f.DEL]];
+}
+function slotsLibres(pos){
+  const need = Object.fromEntries(slotsNecesarios());
+  return G.xi.filter(j => j.pos === pos).length < need[pos];
+}
+function totalPicks(){ return 11 + BANCO_N; }
+function picksHechos(){ return G.xi.length + G.banco.length; }
+
+function empezar(carrera){
+  G.carrera = carrera;
+  iniciarDraft();
+}
+function iniciarDraft(){
+  G.xi = []; G.banco = []; G.rerolls = 3; G.camino = []; G.partidosJugados = 0;
+  campInfo(`Draft · ${G.form} · ${ESTILOS[G.estilo]}`);
+  ir('scrDraft');
+  tirarDado();
+}
+
+function tirarDado(){
+  G.squadIx = rnd(SQUADS.length);
+  G.usadosSquad = new Set();
+  renderDraft();
+}
+function reroll(){
+  if (G.rerolls <= 0) return;
+  G.rerolls--;
+  tirarDado();
+  toast('🎲 Nueva plantilla sorteada');
+}
+
+function puedeElegir(j){
+  // entra como titular si hay puesto libre de su posición, o al banco si hay lugar
+  if (G.xi.length < 11 && slotsLibres(j.pos)) return true;
+  if (G.banco.length < BANCO_N && G.xi.length >= 11) return true;
+  // banco anticipado: si su posición ya está llena pero hay banco libre
+  if (!slotsLibres(j.pos) && G.banco.length < BANCO_N) return true;
+  return false;
+}
+
+function elegir(pi){
+  const sq = SQUADS[G.squadIx];
+  const [n, pos, r] = sq.p[pi];
+  const j = {n, pos, r, from:`${sq.t} ${sq.y}`, f:sq.f, sta:100, gol:0};
+  if (G.xi.length < 11 && slotsLibres(pos)) G.xi.push(j);
+  else if (G.banco.length < BANCO_N) G.banco.push(j);
+  else return;
+  if (picksHechos() >= totalPicks()){ iniciarTorneo(G.carrera ? 'euro' : 'mundial'); return; }
+  tirarDado();
+}
+
+function medias(){
+  const by = p => G.xi.filter(j => j.pos === p);
+  const avg = a => a.length ? Math.round(a.reduce((x,j) => x+j.r, 0) / a.length) : 0;
+  return {atk:avg(by('DEL')), med:avg(by('MED')), def:avg([...by('DEF'), ...by('ARQ')])};
+}
+
+function renderDraft(){
+  const sq = SQUADS[G.squadIx];
+  $('rollTeam').innerHTML = `${sq.f} ${sq.t} <small>· Mundial ${sq.y}</small>`;
+  $('rerollsLeft').textContent = G.rerolls;
+  $('btnReroll').disabled = G.rerolls <= 0;
+  $('draftProg').style.width = (picksHechos() / totalPicks() * 100) + '%';
+  $('draftCount').textContent = `(${picksHechos()}/${totalPicks()})`;
+
+  // lista de slots
+  let html = '';
+  for (const [pos, cant] of slotsNecesarios()){
+    const tengo = G.xi.filter(j => j.pos === pos);
+    for (let i = 0; i < cant; i++){
+      const j = tengo[i];
+      html += j
+        ? `<div class="sl full${LEYENDAS.has(j.n)?' idolo':''}"><span class="pos">${pos}</span><span class="nm">${LEYENDAS.has(j.n)?'👑 ':''}${j.n}</span><span class="from">${j.from}</span><span class="rt">${G.modo===1?'?':j.r}</span></div>`
+        : `<div class="sl empty"><span class="pos">${pos}</span><span class="nm">— libre —</span></div>`;
+    }
+  }
+  html += `<div class="benchtag">🪑 BANCO (${G.banco.length}/${BANCO_N})</div>`;
+  for (let i = 0; i < BANCO_N; i++){
+    const j = G.banco[i];
+    html += j
+      ? `<div class="sl full${LEYENDAS.has(j.n)?' idolo':''}"><span class="pos">${j.pos}</span><span class="nm">${LEYENDAS.has(j.n)?'👑 ':''}${j.n}</span><span class="from">${j.from}</span><span class="rt">${G.modo===1?'?':j.r}</span></div>`
+      : `<div class="sl empty"><span class="pos">·</span><span class="nm">— libre —</span></div>`;
+  }
+  $('slotList').innerHTML = html;
+
+  // jugadores de la plantilla sorteada
+  const elegidos = new Set([...G.xi, ...G.banco].map(j => j.n + j.from));
+  $('pickList').innerHTML = sq.p.map((p, i) => {
+    const j = {n:p[0], pos:p[1], r:p[2]};
+    const ya = elegidos.has(p[0] + `${sq.t} ${sq.y}`);
+    const fit = !ya && puedeElegir(j);
+    const ido = LEYENDAS.has(j.n);
+    return `<div class="pk ${fit?'':'nofit'}${ido?' idolo':''}" onclick="elegir(${i})">
+      <span class="pos">${j.pos}</span><span class="nm">${ido?'👑 ':''}${j.n}</span>
+      <span class="rt">${G.modo===1?'❓':j.r}</span></div>`;
+  }).join('');
+
+  const m = medias();
+  $('mAtk').textContent = G.modo===1 && G.xi.length<11 ? '?' : (m.atk || '–');
+  $('mMed').textContent = G.modo===1 && G.xi.length<11 ? '?' : (m.med || '–');
+  $('mDef').textContent = G.modo===1 && G.xi.length<11 ? '?' : (m.def || '–');
+  const SS = sinergias();
+  $('sinList').innerHTML = SS.lista.length
+    ? '<b>✨ Sinergias activas</b>' + SS.lista.map(t => `<div>${t}</div>`).join('')
+    : '<b>✨ Sinergias</b><div style="color:var(--muted)">Juntá compañeros de un mismo plantel, italianos para el catenaccio, brasileños para el jogo bonito, un enganche de lujo…</div>';
+}
+
+// ================== MUNDIAL: GRUPOS Y LLAVES ==================
+function iniciarTorneo(tipo){
+  G.torneo = tipo;
+  const pool = [...RIVALS].sort(() => Math.random() - .5);
+  const bombo = (min, max) => pool.find(r => r[2] >= min && r[2] <= max && !G.grupo.includes(r)) || pool.find(r => !G.grupo.includes(r));
+  G.grupo = [];
+  if (tipo === 'euro'){
+    G.FASES = ['Grupos','Semifinal','FINAL'];
+    G.koMin = [0, 74, 79];
+    G.totalFechas = 3;
+    const eu = pool.filter(r => EURO.includes(r[0]));
+    G.grupo = eu.slice(0, 3);
+    G.poolKO = eu.slice(3);
+  } else if (tipo === 'clasif'){
+    G.FASES = ['Eliminatorias'];
+    G.totalFechas = 6; // todos contra todos, ida y vuelta
+    G.grupo.push(bombo(78, 99)); G.grupo.push(bombo(68, 77)); G.grupo.push(bombo(50, 67));
+    G.poolKO = [];
+  } else {
+    G.FASES = ['Grupos','Octavos','Cuartos','Semifinal','FINAL'];
+    G.koMin = [0, 68, 74, 79, 83];
+    G.totalFechas = 3;
+    G.grupo.push(bombo(81, 99)); G.grupo.push(bombo(68, 80)); G.grupo.push(bombo(50, 67));
+    G.poolKO = pool.filter(r => !G.grupo.includes(r));
+  }
+  G.tabla = {ME:{pts:0,gf:0,gc:0,pj:0}};
+  G.grupo.forEach(r => G.tabla[r[0]] = {pts:0,gf:0,gc:0,pj:0});
+  G.fechas = 0; G.fase = 0;
+  renderCup();
+  ir('scrCup');
+}
+
+// === fin de cada torneo de la carrera ===
+function torneoCompletado(gane, motivo){
+  if (G.torneo === 'mundial'){ finCampaña(gane, motivo || ''); return; }
+  if (G.torneo === 'euro'){
+    G.camino.push(gane ? '🏆 CAMPEÓN DE LA EUROCOPA' : '— Eurocopa: afuera');
+    toast(gane ? '🏆 ¡CAMPEÓN DE LA EUROCOPA! Ahora, a clasificar al Mundial.' : '😤 La Euro no se dio. Ahora lo que importa: clasificar al Mundial.');
+    irMercado('clasif');
+  } else {
+    if (gane){
+      G.camino.push('🎟️ CLASIFICADO AL MUNDIAL');
+      toast('🎟️ ¡CLASIFICASTE AL MUNDIAL! Último mercado de pases antes de la Copa.');
+      irMercado('mundial');
+    } else {
+      finCampaña(false, motivo || 'No clasificaste al Mundial. La carrera muere en las Eliminatorias, como tantas grandes selecciones.');
+    }
+  }
+}
+
+function fuerzaRival(str){
+  const s = str * 0.94; // leve ajuste de calibración (los atributos rinden menos que la fuerza plana)
+  return {
+    atk:s + rnd(5) - 2, med:s + rnd(5) - 2, def:s + rnd(5) - 2,
+    pace:s + rnd(11) - 5,            // qué tan rápido sale de contra
+    defPace:s - 3 + rnd(11) - 5,     // qué tan rápida es su última línea
+    estilo:rnd(3),                   // 0 replegado · 1 equilibrado · 2 lanzado
+  };
+}
+
+function simOtroPartido(a, b){
+  // partido entre rivales del grupo (no jugás vos)
+  const pa = Math.max(.2, (a[2] - b[2]) / 12 + .9);
+  const ga = Math.min(5, Math.max(0, Math.round(pa * (Math.random() * 2.4))));
+  const gb = Math.min(5, Math.max(0, Math.round(Math.max(.2,(b[2]-a[2])/12+.9) * (Math.random() * 2.4))));
+  return [ga, gb];
+}
+
+function aplicarTabla(eqA, gA, eqB, gB){
+  const A = G.tabla[eqA], B = G.tabla[eqB];
+  A.gf += gA; A.gc += gB; B.gf += gB; B.gc += gA; A.pj++; B.pj++;
+  if (gA > gB) A.pts += 3; else if (gB > gA) B.pts += 3; else { A.pts++; B.pts++; }
+}
+
+function renderCup(){
+  $('cupTitle').textContent = G.fase === 0
+    ? `${TT[G.torneo].split(' ')[0]} ${TNOM[G.torneo]} — Fecha ${G.fechas + 1} de ${G.totalFechas}`
+    : `${TT[G.torneo].split(' ')[0]} ${TNOM[G.torneo]} — ${G.FASES[G.fase]}`;
+  $('bracket').innerHTML = G.FASES.map((f, i) =>
+    `<span class="${i === G.fase ? 'now' : i < G.fase ? 'won' : ''}">${i < G.fase ? '✓ ' : ''}${f}</span>`).join('');
+
+  if (G.fase === 0){
+    $('groupBox').style.display = 'block';
+    const filas = Object.entries(G.tabla)
+      .map(([n, d]) => ({n, ...d, dif:d.gf - d.gc}))
+      .sort((a, b) => b.pts - a.pts || b.dif - a.dif || b.gf - a.gf);
+    $('groupTable').innerHTML = `<tr><th>#</th><th>Equipo</th><th>PJ</th><th>Pts</th><th>GF</th><th>GC</th><th>Dif</th></tr>` +
+      filas.map((f, i) => {
+        const flag = f.n === 'ME' ? '⭐' : G.grupo.find(g => g[0] === f.n)[1];
+        const nom = f.n === 'ME' ? 'TU EQUIPO' : f.n;
+        return `<tr class="${f.n==='ME'?'me':''}"><td>${i+1}</td><td>${flag} ${nom}</td><td>${f.pj}</td><td><b>${f.pts}</b></td><td>${f.gf}</td><td>${f.gc}</td><td>${f.dif}</td></tr>`;
+      }).join('');
+    const prox = G.grupo[G.fechas % 3];
+    $('fixtures').innerHTML = G.fechas < G.totalFechas
+      ? `<div class="fixrow"><b>Próximo partido:</b> ⭐ TU EQUIPO <span class="sc">vs</span> ${prox[1]} ${prox[0]} <span class="muted">(fuerza ${prox[2]})</span></div>`
+      : '';
+    $('btnPlay').textContent = '⚽ JUGAR PARTIDO';
+  } else {
+    $('groupBox').style.display = 'none';
+    const minStr = (G.koMin || [0,68,74,79,83])[G.fase] || 0;
+    const duros = G.poolKO.filter(r => r[2] >= minStr);
+    G.rival = duros.length ? pick(duros) : pick(G.poolKO);
+    $('fixtures').innerHTML = '';
+    $('btnPlay').textContent = `⚽ JUGAR ${G.FASES[G.fase].toUpperCase()} vs ${G.rival[1]} ${G.rival[0]}`;
+  }
+  const SS = sinergias();
+  $('sinCup').innerHTML = SS.lista.length
+    ? '<b>✨ Sinergias de tu equipo</b>' + SS.lista.map(t => `<div>${t}</div>`).join('')
+    : '';
+  campInfo(`${TNOM[G.torneo]} · ${G.FASES[G.fase]} · ${G.form}`);
+}
+
+function irAlPartido(){
+  if (G.fase === 0) G.rival = G.grupo[G.fechas % 3];
+  iniciarPartido();
+}
+
+// ================== MERCADO DE PASES (modo carrera) ==================
+let MK = null;
+function irMercado(prox){
+  MK = {prox, left:3, rerolls:2, squadIx:rnd(SQUADS.length), pick:null};
+  campInfo('💼 Mercado de pases');
+  renderMk();
+  ir('scrMercado');
+}
+function enEquipo(n, from){
+  return [...G.xi, ...G.banco].some(j => j.n === n && j.from === from);
+}
+function renderMk(){
+  const sq = SQUADS[MK.squadIx];
+  $('mkInfo').innerHTML = `Próximo desafío: <b>${TNOM[MK.prox]}</b>. Te quedan <b>${MK.left}</b> incorporaciones: tocá un jugador y elegí a quién reemplaza (misma posición).`;
+  $('mkTeam').innerHTML = `${sq.f} ${sq.t} <small>· Mundial ${sq.y}</small>`;
+  $('mkRerolls').textContent = MK.rerolls;
+  $('mkRerollBtn').disabled = MK.rerolls <= 0;
+  $('mkList').innerHTML = sq.p.map((pl, i) => {
+    const j = {n:pl[0], pos:pl[1], r:pl[2]};
+    const ya = enEquipo(j.n, `${sq.t} ${sq.y}`);
+    const ido = LEYENDAS.has(j.n);
+    return `<div class="pk ${ya ? 'nofit' : ''}${ido ? ' idolo' : ''}" onclick="mkPick(${i})">
+      <span class="pos">${j.pos}</span><span class="nm">${ido ? '👑 ' : ''}${j.n}</span>
+      <span class="rt">${G.modo === 1 ? '❓' : j.r}</span></div>`;
+  }).join('');
+  if (MK.pick !== null){
+    const sqp = sq.p[MK.pick];
+    $('mkSwap').style.display = 'block';
+    $('mkSwapTxt').innerHTML = `Entra <b>${sqp[0]}</b> (${sqp[1]}) → tocá al que sale:`;
+    const cands = [];
+    G.xi.forEach((j, i) => { if (j.pos === sqp[1]) cands.push({j, i, banco:false}); });
+    G.banco.forEach((j, i) => { if (j.pos === sqp[1]) cands.push({j, i, banco:true}); });
+    $('mkSwapList').innerHTML = cands.length ? cands.map(c => {
+      const ini = c.j.n.replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      return `<div class="pchip${LEYENDAS.has(c.j.n) ? ' idolo' : ''}${c.banco ? ' bench' : ''}" onclick="mkSwapDo(${c.i}, ${c.banco})">
+        <div class="pc-circle" style="background:#2e2e33;"><span>${ini}</span></div>
+        <b>${c.j.n}</b><span class="pc-sub">${c.j.pos} · ${G.modo === 1 ? '?' : c.j.r}${c.banco ? ' · banco' : ''}</span></div>`;
+    }).join('') : '<p class="muted">No tenés a nadie de esa posición.</p>';
+  } else {
+    $('mkSwap').style.display = 'none';
+  }
+}
+function mkPick(i){
+  const sq = SQUADS[MK.squadIx];
+  if (enEquipo(sq.p[i][0], `${sq.t} ${sq.y}`)) return;
+  MK.pick = i;
+  renderMk();
+  $('mkSwap').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function mkSwapDo(ix, esBanco){
+  const sq = SQUADS[MK.squadIx];
+  const pl = sq.p[MK.pick];
+  const nuevo = {n:pl[0], pos:pl[1], r:pl[2], from:`${sq.t} ${sq.y}`, f:sq.f, sta:100, gol:0};
+  const sale = esBanco ? G.banco[ix] : G.xi[ix];
+  if (esBanco) G.banco[ix] = nuevo; else G.xi[ix] = nuevo;
+  MK.left--; MK.pick = null; MK.rerolls = 2; MK.squadIx = rnd(SQUADS.length);
+  toast(`💼 Fichaste a ${nuevo.n} por ${sale.n}.`);
+  if (MK.left <= 0){ mkContinuar(); return; }
+  renderMk();
+}
+function mkReroll(){
+  if (MK.rerolls <= 0) return;
+  MK.rerolls--; MK.squadIx = rnd(SQUADS.length); MK.pick = null;
+  renderMk();
+}
+function mkSaltear(){ mkContinuar(); }
+function mkContinuar(){
+  const prox = MK.prox; MK = null;
+  iniciarTorneo(prox);
+}
+
+// ================== MOTOR DE PARTIDO EN VIVO ==================
+let M = null;
+
+const TXT = {
+  chanceA: ['¡{J} encara y pisa el área rival!','¡Pelotazo cruzado, {J} la baja de pecho y enfila al arco!','¡Pared en la puerta del área, {J} queda mano a mano!','¡{J} saca un latigazo desde afuera!','Córner para tu equipo… ¡{J} gana de cabeza!'],
+  golA: ['¡¡¡GOOOOOL!!! ¡{J} la clava al ángulo, es un golazo para la historia!','¡¡¡GOOOOOL DE {J}!!! ¡La picó por arriba del arquero, no lo puedo creer!','¡¡¡GOLAZO!!! ¡{J} la cose contra el palo, imposible para el arquero!','¡¡¡GOOOOOL!!! ¡Definición de killer de {J} en el área chica!'],
+  failA: ['¡La tapó el arquero rival con una mano increíble! Atajadón.','¡¡PALO!! La pelota se estrella en el poste y sale. No puede ser.','La tira apenas desviada. Te agarrás la cabeza.','El arquero rival la saca al córner. Estaba el gol.'],
+  chanceB: ['Contra rápida de {R}… cuidado que vienen con todo.','{R} mete un centro venenoso al área…','Pelota parada peligrosa para {R}.','El delantero de {R} se escapa por el medio…'],
+  golB: ['Gol de {R}. La defensa pidió offside pero no había nada. Duele.','Gol de {R}. Golazo de afuera del área, nada que reprochar.','Gol de {R}. Error en la salida y te lo facturaron al instante.'],
+  failB: ['¡¡QUÉ ATAJADA DE TU ARQUERO!! ¡Volá a colgarlo en un cuadro!','¡Tu central la saca en la línea! De milagro seguís igual.','{R} la tira a las nubes. Respirás de nuevo.','¡Palo de {R}! La fortuna está de tu lado.'],
+  color: ['Se juega con intensidad en el mediocampo.','El partido está picado, fricción y pierna fuerte.','Tu equipo toca y toca buscando el hueco.','La hinchada mete presión, tremendo clima.','Amarilla por una plancha fea en mitad de cancha.','El árbitro deja seguir y el público explota.'],
+};
+const f9 = a => a[rnd(a.length)];
+
+function mediasVivas(){
+  const act = G.xi.filter(j => !j.roja);
+  // el cansancio pega más en velocidad y físico; las lesiones bajan todo
+  const A = (j, k) => {
+    const dep = (k === 'pac' || k === 'phy') ? 0.68 + 0.32 * j.sta / 100 : 0.85 + 0.15 * j.sta / 100;
+    return attrs(j)[k] * dep - (j.lesion ? 6 : 0);
+  };
+  const by = p => act.filter(j => j.pos === p);
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 45;
+  const meds = by('MED'), defs = by('DEF'), dels = by('DEL'), arqs = by('ARQ');
+  // CONTROL: pase+creatividad del medio; pocos volantes = no tenés la pelota
+  let med = avg(meds.map(j => A(j,'pas') * .55 + A(j,'cre') * .30 + A(j,'def') * .15));
+  med *= Math.min(1, 0.75 + meds.length * 0.06);
+  // ATAQUE ELABORADO: definición+creatividad de los 9 + creación desde el medio
+  let atkP;
+  if (dels.length) atkP = avg(dels.map(j => A(j,'fin') * .5 + A(j,'cre') * .25 + A(j,'pac') * .25));
+  else atkP = avg(meds.map(j => A(j,'cre') * .6 + A(j,'fin') * .4)) - 2; // falso 9 emergente
+  const atk = atkP * .65 + avg(meds.map(j => A(j,'cre'))) * .35;
+  // CONTRAGOLPE: velocidad pura de tus puntas
+  const contra = dels.length ? avg(dels.map(j => A(j,'pac') * .6 + A(j,'fin') * .4)) : avg(meds.map(j => A(j,'pac'))) - 4;
+  // DEFENSA: marca+físico de los centrales + arquero; y su VELOCIDAD define qué tan alto podés parar la línea
+  let def = avg(defs.map(j => A(j,'def') * .55 + A(j,'phy') * .25 + A(j,'pac') * .20)) * .78 + avg(arqs.map(j => A(j,'def'))) * .22;
+  def *= Math.min(1, 0.78 + defs.length * 0.055);
+  const defPace = avg(defs.map(j => A(j,'pac')));
+  const S = sinergias();
+  const rojasPen = (11 - act.length) * 3.5;
+  const q = S.quim - rojasPen;
+  return {atk:atk + q, med:med + q, def:def + q, contra:contra + q, defPace, S};
+}
+
+function iniciarPartido(){
+  const R = G.rival;
+  M = {
+    min:0, gA:0, gB:0, vel:1, pausa:false, mom:0, subs:5, fin:false, salto:false,
+    rs:fuerzaRival(R[2]), tiros:[0,0], timer:null, goleadores:[],
+  };
+  const cod = n => n.normalize('NFD').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
+  $('tmA').textContent = '⭐ TU EQUIPO';
+  $('tmB').textContent = `${R[1]} ${cod(R[0])}`;
+  $('momR').textContent = R[0].toUpperCase();
+  $('feed').innerHTML = '';
+  $('btnPause').textContent = '⏸ Pausar';
+  ev(`🏟️ ¡Arranca el partido! ${TNOM[G.torneo]} · ${G.FASES[G.fase]}: TU EQUIPO vs ${R[0]}.`, 'warn', 0);
+  ev(`📋 El rival sale ${['replegado, a esperar y salir rápido', 'con un esquema equilibrado', 'lanzado al ataque, con la línea altísima'][M.rs.estilo]}.`, 'warn', 0);
+  const mv0 = mediasVivas();
+  if (M.rs.estilo === 2 && mv0.contra > M.rs.defPace + 3) ev('⚡ Dejan toda la espalda libre y tus puntas vuelan: replegate y matálos de contra.', 'gol', 0);
+  if (G.estilo === 2 && mv0.defPace < M.rs.pace - 3) ev('⚠️ Tu línea alta con centrales lentos contra esa velocidad… es ruleta rusa. Pensalo en la pizarra.', 'golr', 0);
+  mv0.S.lista.forEach(t => ev('✨ ' + t, 'warn', 0));
+  ir('scrMatch');
+  setVel(1);
+}
+
+function setVel(v){
+  if (!M || M.fin) return;
+  M.vel = v;
+  ['v1','v2','v4'].forEach((id, i) => $(id).style.borderColor = [1,2,4][i] === v ? 'var(--green)' : 'var(--line)');
+  clearInterval(M.timer);
+  if (!M.pausa) M.timer = setInterval(tick, [0,700,350,160][Math.min(v,3)] || 700);
+}
+
+function togglePausa(){
+  if (!M || M.fin) return;
+  M.pausa = !M.pausa;
+  clearInterval(M.timer);
+  if (M.pausa){
+    $('btnPause').textContent = '▶ Reanudar';
+    ev('⏸ Partido pausado.', 'warn', M.min);
+  } else {
+    $('btnPause').textContent = '⏸ Pausar';
+    setVel(M.vel);
+  }
+}
+
+// ===== PIZARRA: cambios en cualquier momento, viendo la formación =====
+let piz = {open:false, wasRunning:false, sel:null};
+
+function abrirPizarra(){
+  if (!M || M.fin || M.salto) return;
+  piz.open = true; piz.sel = null;
+  piz.wasRunning = !M.pausa;
+  if (!M.pausa){ M.pausa = true; clearInterval(M.timer); $('btnPause').textContent = '▶ Reanudar'; }
+  renderPizarra();
+  $('pizarra').classList.add('open');
+}
+function cerrarPizarra(){
+  piz.open = false;
+  $('pizarra').classList.remove('open');
+  if (piz.wasRunning && M && !M.fin){ M.pausa = false; $('btnPause').textContent = '⏸ Pausar'; setVel(M.vel); }
+}
+function renderPizarra(){
+  $('subsLeft').textContent = M.subs;
+  $('pizMsg').textContent = piz.sel === null
+    ? 'El partido está pausado. Tocá un SUPLENTE y después al titular por el que entra.'
+    : `Entra ${G.banco[piz.sel].n} → tocá al titular que sale.`;
+  const orden = ['DEL','MED','DEF','ARQ'];
+  $('pizXI').innerHTML = orden.map(pos => {
+    const fila = G.xi.map((j, i) => ({j, i})).filter(({j}) => j.pos === pos);
+    return fila.length ? `<div class="pizrow">` + fila.map(({j, i}) => chipPiz(j, i, false)).join('') + `</div>` : '';
+  }).join('');
+  $('pizBench').innerHTML = G.banco.length
+    ? `<div class="pizrow">` + G.banco.map((j, i) => chipPiz(j, i, true)).join('') + `</div>`
+    : '<p class="muted">No te quedan suplentes.</p>';
+  [0,1,2].forEach(i => $('e'+i).style.borderColor = G.estilo === i ? 'var(--gold)' : 'var(--line)');
+}
+function chipPiz(j, i, esBanco){
+  const e = Math.round(j.sta);
+  const cls = (esBanco ? ' bench' : '') + (esBanco && piz.sel === i ? ' sel' : '') + (j.roja ? ' roja' : '') + (LEYENDAS.has(j.n) ? ' idolo' : '');
+  const ini = j.n.replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const col = e > 60 ? 'var(--green)' : e > 40 ? 'var(--yellow)' : 'var(--red)';
+  return `<div class="pchip${cls}" onclick="${esBanco ? `selBanco(${i})` : `selTitular(${i})`}">
+    <div class="pc-circle" style="background:conic-gradient(${col} ${e * 3.6}deg, #2e2e33 0deg);"><span>${ini}</span></div>
+    <b>${LEYENDAS.has(j.n) ? '👑 ' : ''}${j.n}</b>
+    <span class="pc-sub">${j.pos} · ${G.modo === 1 ? '?' : j.r}${j.roja ? ' 🟥' : ''}${j.lesion ? ' 🚑' : ''}</span>
+  </div>`;
+}
+function selBanco(i){ piz.sel = piz.sel === i ? null : i; renderPizarra(); }
+function selTitular(i){
+  if (piz.sel === null){ toast('Primero tocá al suplente que entra 🪑'); return; }
+  if (M.subs <= 0){ toast('🙅 Ya usaste los 5 cambios.'); return; }
+  if (G.xi[i].roja){ toast('Está expulsado: no se puede reemplazar.'); return; }
+  const entra = G.banco.splice(piz.sel, 1)[0];
+  const sale = G.xi[i];
+  entra.sta = 100;
+  G.xi[i] = entra;
+  M.subs--;
+  piz.sel = null;
+  ev(`🔁 CAMBIO: sale ${sale.n}, entra ${entra.n} (${entra.from}).${entra.pos !== sale.pos ? ' ⚠️ Juega fuera de posición natural.' : ''}`, 'warn', M.min);
+  renderPizarra(); renderMatch();
+}
+
+function setEstilo(e){
+  G.estilo = e;
+  ev(`📋 Cambiaste el estilo a ${ESTILOS[e]}.`, 'warn', M ? M.min : 0);
+  if (piz.open) renderPizarra();
+}
+
+function ev(txt, cls, min){
+  const d = document.createElement('div');
+  d.className = 'ev ' + (cls || '');
+  d.innerHTML = `<span class="min">${min}'</span>${txt}`;
+  $('feed').prepend(d);
+}
+
+function scorerUser(){
+  const act = G.xi.filter(j => !j.roja);
+  const pesos = act.map(j => j.pos === 'DEL' ? 5 : j.pos === 'MED' ? 2 : j.pos === 'DEF' ? .4 : .05);
+  let r = Math.random() * pesos.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < act.length; i++){ r -= pesos[i]; if (r <= 0) return act[i]; }
+  return act[act.length - 1];
+}
+
+function tick(){
+  if (!M || M.fin || M.pausa) return;
+  M.min++;
+  const mv = mediasVivas();
+  const R = G.rival;
+  G.xi.forEach(j => { if (!j.roja) j.sta = Math.max(40, j.sta - (0.4 + Math.random() * .3) * (1 - (attrs(j).sta || 0))); });
+  // posesión real: replegarte cede pelota a propósito; el rival lanzado la busca
+  const posMia = [0.88, 1, 1.08][G.estilo], posRiv = [0.88, 1, 1.08][M.rs.estilo];
+  const pU = (mv.med * posMia) / (mv.med * posMia + M.rs.med * posRiv);
+  M.mom = Math.max(-50, Math.min(50, M.mom + (pU - .5) * 10 + (Math.random() - .5) * 12));
+
+  if (Math.random() < 0.085){
+    // dominancia agudizada: si no tenés equipo, no tenés ocasiones
+    const dom = Math.pow(pU, 1.7) / (Math.pow(pU, 1.7) + Math.pow(1 - pU, 1.7));
+    const ataco = Math.random() < dom + M.mom / 300;
+    if (ataco){
+      M.tiros[0]++;
+      const J = scorerUser();
+      // ¿contra o elaborada? si cediste pelota y el rival está lanzado, hay campo para correr
+      const esContra = Math.random() < (1 - pU) * .45 + (M.rs.estilo === 2 ? .25 : M.rs.estilo === 1 ? .08 : 0) + (G.estilo === 0 ? .15 : 0);
+      let pGol;
+      if (esContra){
+        const espacio = M.rs.estilo === 2 ? 8 : M.rs.estilo === 1 ? 2 : -4; // línea rival alta = espacio a la espalda
+        pGol = Math.max(.04, Math.min(.65, .16 + (mv.contra - M.rs.defPace + espacio) / 30));
+      } else {
+        const bloque = M.rs.estilo === 0 ? 6 : M.rs.estilo === 1 ? 2 : -2;  // rival replegado = bloque más duro
+        pGol = Math.max(.04, Math.min(.60, .18 + (mv.atk - (M.rs.def + bloque)) / 32));
+      }
+      if (Math.random() < pGol){
+        M.gA++; J.gol++; M.goleadores.push(`${J.n} ${M.min}'`);
+        ev(f9(TXT.golA).replaceAll('{J}', J.n), 'gol', M.min);
+        M.mom = Math.min(50, M.mom + 18);
+      } else {
+        ev(f9(TXT.chanceA).replaceAll('{J}', J.n) + ' ' + f9(TXT.failA), '', M.min);
+      }
+    } else {
+      M.tiros[1]++;
+      // el rival también elige: si vos jugás línea alta y tus centrales son lentos, te corren la espalda
+      const rivContra = Math.random() < pU * .45 + (G.estilo === 2 ? .28 : G.estilo === 1 ? .08 : 0);
+      let pGol;
+      if (rivContra){
+        const espacio = G.estilo === 2 ? 8 : G.estilo === 1 ? 2 : -5;
+        pGol = Math.max(.04, Math.min(.65, .16 + (M.rs.pace - mv.defPace + espacio) / 30));
+      } else {
+        const bloque = G.estilo === 0 ? 6 : G.estilo === 1 ? 2 : -2;
+        pGol = Math.max(.04, Math.min(.60, .18 + (M.rs.atk - (mv.def + bloque)) / 32));
+      }
+      if (Math.random() < pGol){
+        M.gB++;
+        ev(f9(TXT.golB).replaceAll('{R}', R[0]), 'golr', M.min);
+        M.mom = Math.max(-50, M.mom - 18);
+      } else {
+        ev(f9(TXT.chanceB).replaceAll('{R}', R[0]) + ' ' + f9(TXT.failB).replaceAll('{R}', R[0]), '', M.min);
+      }
+    }
+  } else if (Math.random() < 0.04){
+    ev(f9(TXT.color), '', M.min);
+  }
+
+  if (Math.random() < 0.0035){
+    const cand = G.xi.filter(j => !j.roja && j.pos !== 'ARQ');
+    if (cand.length > 7){
+      const j = pick(cand); j.roja = true;
+      ev(`🟥 ¡¡EXPULSADO ${j.n}!! Te quedás con uno menos. El partido cambia por completo.`, 'golr', M.min);
+    }
+  }
+  if (Math.random() < 0.0035){
+    const cand = G.xi.filter(j => !j.roja && !j.lesion);
+    const j = pick(cand); j.lesion = true;
+    ev(`🚑 ${j.n} se resiente y hace señas al banco. Juega disminuido: pensá un cambio.`, 'warn', M.min);
+    if (M.subs > 0 && !M.salto) abrirPizarra();
+  }
+
+  if (M.min === 45){
+    ev('⏱ Final del primer tiempo. Tocá 🔁 Cambios para mover la pizarra.', 'warn', 45);
+    renderMatch();
+    if (!M.pausa && !M.salto) togglePausa();
+    return;
+  }
+  if (M.min >= 90){ finPartido(); return; }
+  renderMatch();
+}
+
+function renderMatch(){
+  $('scoreTxt').textContent = `${M.gA} - ${M.gB}`;
+  $('minTxt').textContent = M.min + "'";
+  const b = $('momBar');
+  if (M.mom >= 0){ b.style.left = '50%'; b.style.width = (M.mom) + '%'; b.style.background = 'var(--green)'; }
+  else { b.style.left = (50 + M.mom) + '%'; b.style.width = (-M.mom) + '%'; b.style.background = 'var(--red)'; }
+  const stam = Math.round(G.xi.reduce((a, j) => a + j.sta, 0) / 11);
+  $('statline').innerHTML = `<span>Tiros: ${M.tiros[0]} - ${M.tiros[1]}</span><span>⚡ Energía media: ${stam}%</span><span>Cambios: ${M.subs}</span><span>${ESTILOS[G.estilo]}</span>`;
+}
+
+function saltarFinal(){
+  if (!M || M.fin) return;
+  M.salto = true;
+  if (piz.open) cerrarPizarra();
+  if (M.pausa) togglePausa();
+  clearInterval(M.timer);
+  while (M.min < 90 && !M.fin){
+    M.pausa = false;
+    const min = M.min;
+    tick();
+    if (M.min === min) M.min++;
+    if (M.pausa) M.pausa = false;
+  }
+  if (!M.fin) finPartido();
+}
+
+function finPartido(){
+  if (M.fin) return;
+  M.fin = true;
+  if (piz.open) cerrarPizarra();
+  clearInterval(M.timer);
+  renderMatch();
+  const empate = M.gA === M.gB;
+  ev(`🏁 ¡FINAL DEL PARTIDO! TU EQUIPO ${M.gA} - ${M.gB} ${G.rival[0]}.`, 'warn', 90);
+  G.xi.forEach(j => { j.sta = Math.min(100, j.sta + 35); j.lesion = false; j.roja = false; });
+
+  if (G.fase > 0 && empate){
+    setTimeout(iniciarPenales, 1200);
+    return;
+  }
+  setTimeout(() => cerrarPartido(M.gA, M.gB, null), 1200);
+}
+
+// ================== PENALES ==================
+let P = null;
+function penSkill(j){ const a = attrs(j); return Math.round(a.fin * .55 + a.cre * .25 + a.pas * .20); }
+function iniciarPenales(){
+  P = {a:[], b:[], turno:'A', ronda:1, esperando:false, fase:'eleccion', sel:[], orden:[], idx:0};
+  renderEleccionPens();
+  renderPens();
+  ir('scrPens');
+}
+function renderEleccionPens(){
+  $('penSetup').style.display = 'block';
+  $('penGame').style.display = 'none';
+  const act = G.xi.map((j, i) => ({j, i})).filter(o => !o.j.roja);
+  $('penList').innerHTML = act.map(({j, i}) => {
+    const ix = P.sel.indexOf(i);
+    return `<div class="pchip ${ix >= 0 ? 'sel' : ''}" onclick="togglePateador(${i})">
+      <div class="pc-circle" style="background:${ix >= 0 ? 'var(--gold)' : '#2e2e33'};"><span>${ix >= 0 ? (ix + 1) + 'º' : penSkill(j)}</span></div>
+      <b>${j.n}</b><span class="pc-sub">${j.pos} · def. ${penSkill(j)}</span></div>`;
+  }).join('');
+  $('penOk').disabled = P.sel.length !== 5;
+}
+function togglePateador(i){
+  const ix = P.sel.indexOf(i);
+  if (ix >= 0) P.sel.splice(ix, 1);
+  else if (P.sel.length < 5) P.sel.push(i);
+  renderEleccionPens();
+}
+function confirmarPateadores(){
+  const resto = G.xi.map((j, i) => i)
+    .filter(i => !G.xi[i].roja && !P.sel.includes(i))
+    .sort((a, b) => {
+      if (G.xi[a].pos === 'ARQ') return 1;
+      if (G.xi[b].pos === 'ARQ') return -1;
+      return penSkill(G.xi[b]) - penSkill(G.xi[a]);
+    });
+  P.orden = [...P.sel, ...resto];
+  P.idx = 0; P.fase = 'tanda';
+  $('penSetup').style.display = 'none';
+  $('penGame').style.display = 'block';
+  $('penMsg').textContent = `Ronda 1 — Patea ${G.xi[P.orden[0]].n}. Elegí el palo.`;
+}
+function renderPens(){
+  const dots = arr => arr.map(x => x ? '🟢' : '🔴').join('') || '—';
+  $('penA').innerHTML = `⭐ TU EQUIPO <span class="pendots">${dots(P.a)}</span>`;
+  $('penB').innerHTML = `${G.rival[1]} ${G.rival[0]} <span class="pendots">${dots(P.b)}</span>`;
+}
+function patear(palo){
+  if (P.esperando || P.fase !== 'tanda') return;
+  P.esperando = true;
+  const POS = ['8%', '44%', '78%'];
+  const pelota = $('pelota'), arq = $('arquero');
+  pelota.style.left = '46%'; pelota.style.bottom = '-26px';
+  arq.style.left = '44%';
+
+  if (P.turno === 'A'){
+    const tirador = G.xi[P.orden[P.idx % P.orden.length]];
+    const q = penSkill(tirador);
+    const dive = rnd(3);
+    setTimeout(() => { pelota.style.left = POS[palo]; pelota.style.bottom = '50px'; arq.style.left = POS[dive]; }, 120);
+    setTimeout(() => {
+      // realismo: el palo correcto del arquero no siempre alcanza si el pateador es de élite
+      const pGol = dive === palo
+        ? Math.max(.08, Math.min(.38, .18 + (q - 75) / 180))
+        : Math.max(.55, Math.min(.94, .70 + (q - 75) / 120));
+      const gol = Math.random() < pGol;
+      P.a.push(gol); P.idx++;
+      toast(gol ? `⚽ ¡GOOOL de ${tirador.n}!` : `🧤 ¡Le atajaron el penal a ${tirador.n}!`);
+      siguientePenal();
+    }, 800);
+  } else {
+    const miArq = G.xi.find(j => j.pos === 'ARQ' && !j.roja);
+    const gk = miArq ? attrs(miArq).def : 70;
+    const rq = M.rs.atk + rnd(7) - 3;
+    const shot = rnd(3);
+    setTimeout(() => { pelota.style.left = POS[shot]; pelota.style.bottom = '50px'; arq.style.left = POS[palo]; }, 120);
+    setTimeout(() => {
+      const pGol = palo === shot
+        ? Math.max(.10, Math.min(.45, .32 - (gk - 78) / 160))
+        : Math.max(.60, Math.min(.92, .76 + (rq - 80) / 160));
+      const gol = Math.random() < pGol;
+      P.b.push(gol);
+      toast(gol ? '😖 Gol del rival…' : `🧤 ¡¡ATAJADÓN${miArq ? ' DE ' + miArq.n.toUpperCase() : ''}!!`);
+      siguientePenal();
+    }, 800);
+  }
+}
+function siguientePenal(){
+  renderPens();
+  const sa = P.a.filter(Boolean).length, sb = P.b.filter(Boolean).length;
+  const ta = P.a.length, tb = P.b.length;
+  const done5 = ta >= 5 && tb >= 5;
+  if ((!done5 && (sa > sb + (5 - tb) || sb > sa + (5 - ta))) || (done5 && ta === tb && sa !== sb)){
+    setTimeout(() => cerrarPartido(M.gA, M.gB, sa > sb), 900);
+    return;
+  }
+  P.turno = P.turno === 'A' ? 'B' : 'A';
+  if (P.turno === 'A' && ta === tb) P.ronda++;
+  setTimeout(() => {
+    $('penMsg').textContent = P.turno === 'A'
+      ? `Ronda ${P.ronda} — Patea ${G.xi[P.orden[P.idx % P.orden.length]].n}. Elegí el palo.`
+      : `Ronda ${P.ronda} — ¡Atajás vos! ¿A dónde te tirás?`;
+    $('pelota').style.left = '46%'; $('pelota').style.bottom = '-26px'; $('arquero').style.left = '44%';
+    P.esperando = false;
+  }, 900);
+}
+
+// ================== CIERRE DE PARTIDO Y CAMPAÑA ==================
+function cerrarPartido(gA, gB, ganePen){
+  const R = G.rival;
+  const res = `${gA}-${gB}${ganePen !== null && ganePen !== undefined ? (ganePen ? ' (pen ✓)' : ' (pen ✗)') : ''}`;
+  G.camino.push(`${TT[G.torneo]} ${G.FASES[G.fase]}: vs ${R[1]} ${R[0]} ${res}`);
+  G.partidosJugados++;
+
+  if (G.fase === 0){
+    aplicarTabla('ME', gA, R[0], gB);
+    const otros = G.grupo.filter(g => g[0] !== R[0]);
+    const [oa, ob] = simOtroPartido(otros[0], otros[1]);
+    aplicarTabla(otros[0][0], oa, otros[1][0], ob);
+    G.fechas++;
+    if (G.fechas >= G.totalFechas){
+      const filas = Object.entries(G.tabla).map(([n, d]) => ({n, ...d, dif:d.gf - d.gc}))
+        .sort((a, b) => b.pts - a.pts || b.dif - a.dif || b.gf - a.gf);
+      const pos = filas.findIndex(f => f.n === 'ME') + 1;
+      if (G.torneo === 'clasif'){
+        torneoCompletado(pos <= 2, pos > 2 ? `Quedaste ${pos}° en las Eliminatorias: te quedaste sin Mundial.` : '');
+        return;
+      }
+      if (pos <= 2){
+        G.fase = 1;
+        toast(`🎉 ¡Clasificaste ${pos}° del grupo! A ${G.FASES[1].toLowerCase()}.`);
+      } else {
+        torneoCompletado(false, `Quedaste ${pos}° del grupo. El ${TNOM[G.torneo]} se terminó ahí.`);
+        return;
+      }
+    }
+    renderCup(); ir('scrCup');
+  } else {
+    const gane = ganePen !== null && ganePen !== undefined ? ganePen : gA > gB;
+    if (!gane){
+      torneoCompletado(false, `Te eliminó ${R[0]} en ${G.FASES[G.fase]}. ${G.fase >= G.FASES.length - 2 ? 'Tan cerca que duele.' : 'La próxima draftéa mejor el mediocampo.'}`);
+      return;
+    }
+    if (G.fase === G.FASES.length - 1){ torneoCompletado(true, ''); return; }
+    G.fase++;
+    toast(`🔥 ¡Ganaste! Avanzás a ${G.FASES[G.fase]}.`);
+    renderCup(); ir('scrCup');
+  }
+}
+
+function lanzarConfetti(){
+  const cols = ['#f7d75e','#7fd4ff','#2fe08a','#ff5470','#ffffff'];
+  for (let i = 0; i < 70; i++){
+    const c = document.createElement('div');
+    c.className = 'confeti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = pick(cols);
+    c.style.animationDelay = (Math.random() * 2.5) + 's';
+    c.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 7000);
+  }
+}
+
+function finCampaña(campeon, motivo){
+  if (campeon) lanzarConfetti();
+  const goleador = [...G.xi, ...G.banco].sort((a, b) => b.gol - a.gol)[0];
+  $('endEmoji').textContent = campeon ? '🏆' : '😭';
+  $('endTitle').textContent = campeon ? '¡¡CAMPEÓN DEL MUNDO!!' : 'Fin de la campaña';
+  $('endSub').textContent = campeon
+    ? 'Tu draft pasó a la historia. Dirigiste, cambiaste, sufriste los penales… y diste la vuelta olímpica.'
+    : motivo;
+  const ratings = medias();
+  $('shareCard').textContent =
+`⚽ MUNDIALITO — ${G.carrera ? 'MODO CARRERA 🛣️' : 'Mundial Express'} (${G.form}, ${ESTILOS[G.estilo]}${G.modo === 1 ? ', modo ALMANAQUE 🧠' : ''})
+
+XI: ${G.xi.map(j => j.n).join(' · ')}
+
+${G.camino.join('\n')}
+
+${campeon ? '🥇 CAMPEÓN DEL MUNDO' : '☠️ Eliminado'} · Goleador: ${goleador && goleador.gol > 0 ? `${goleador.n} (${goleador.gol})` : 'sin goleador'}
+📊 ATA ${ratings.atk} · MED ${ratings.med} · DEF ${ratings.def}
+
+¿Armás un once mejor? Jugá MUNDIALITO.`;
+  ir('scrEnd');
+}
+
+function compartirCarta(){
+  const texto = $('shareCard').textContent;
+  if (navigator.share){ navigator.share({text:texto}).catch(() => {}); }
+  else navigator.clipboard.writeText(texto).then(() => toast('🔗 Carta copiada. ¡Pegala en el grupo!'));
+}
+
+// ================== INIT ==================
+renderHome();
+</script>
+</body>
+</html>
