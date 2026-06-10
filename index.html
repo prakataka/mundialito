@@ -12,16 +12,16 @@
   :root{
     --bg:#f4f4f2; --ink:#111114; --muted:#76767e; --line:#dddddA;
     --surface:#ffffff; --card2:#ececea; --card3:#e2e2df;
-    --blue:#2b4bf2; --blue2:#1d34b8; --blue3:#6e85ff;
-    --gold:#2b4bf2; --gold1:#2b4bf2; --gold2:#1d34b8; /* alias heredados */
+    --blue:#d4a900; --blue2:#a88600; --blue3:#e7c34d;
+    --gold:#d4a900; --gold1:#d4a900; --gold2:#a88600; /* alias heredados */
     --green:#0a9b4e; --red:#d92d2d; --yellow:#b98a00;
     --grass:#1e8a3c; --grass2:#136d2e; --text:#111114;
   }
   body.dark{
     --bg:#101013; --ink:#f1f1f4; --muted:#90909a; --line:#26262b;
     --surface:#16161a; --card2:#1d1d22; --card3:#26262c;
-    --blue:#4b66ff; --blue2:#3a51d6; --blue3:#8195ff;
-    --gold:#4b66ff; --gold1:#4b66ff; --gold2:#3a51d6;
+    --blue:#ffd23e; --blue2:#d8ae1e; --blue3:#ffe48a;
+    --gold:#ffd23e; --gold1:#ffd23e; --gold2:#d8ae1e;
     --green:#34d268; --red:#ff5252; --yellow:#ffd34d; --text:#f1f1f4;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; border-radius:0;}
@@ -77,14 +77,14 @@
   .btn:hover{border-color:var(--blue); color:var(--blue);}
   /* bloque azul al borde, como la referencia */
   .btn.big{
-    display:block; background:var(--blue); color:#fff; border:none;
+    display:block; background:var(--blue); color:#111; border:none;
     width:calc(100% + 36px); margin-left:-18px; margin-right:-18px;
     padding:16px; font-size:14px; font-weight:900; letter-spacing:1.5px;
   }
-  .btn.big:hover{background:var(--blue2); color:#fff;}
+  .btn.big:hover{background:var(--blue2); color:#111;}
   .btn.warn{color:var(--red); border-color:var(--red);}
   .btn:disabled{opacity:.3; pointer-events:none;}
-  .nuevo{display:inline-block; margin-left:8px; background:#fff; color:var(--blue); font-size:9px; font-weight:900; letter-spacing:1px; padding:2px 6px; vertical-align:middle;}
+  .nuevo{display:inline-block; margin-left:8px; background:#111; color:var(--blue); font-size:9px; font-weight:900; letter-spacing:1px; padding:2px 6px; vertical-align:middle;}
 
   /* ---- DRAFT ---- */
   .prog{height:3px; background:var(--line); margin:2px 0 14px;}
@@ -104,8 +104,8 @@
   .pk .rt{font-weight:900; color:var(--blue); font-variant-numeric:tabular-nums; font-size:15px;}
   .pk.idolo{box-shadow:inset 3px 0 0 var(--blue);}
   .pk.idolo .nm{color:var(--blue);}
-  .dest{font-size:8px; font-weight:900; letter-spacing:.5px; padding:2px 6px; background:var(--blue); color:#fff; flex-shrink:0;}
-  .dest.b{background:var(--card3); color:var(--muted);}
+  .dest{font-size:8px; font-weight:900; letter-spacing:.5px; padding:2px 6px; background:var(--blue); color:#111; flex-shrink:0;}
+  .dest.b{background:var(--ink); color:var(--bg);}
   .meter{display:grid; grid-template-columns:repeat(3,1fr); margin-top:14px; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
   .meter .m{padding:10px 4px; text-align:center;}
   .meter .m + .m{border-left:1px solid var(--line);}
@@ -127,16 +127,21 @@
   .tj-p .c{
     width:26px; height:26px; background:var(--blue); margin:0 auto 2px;
     display:flex; align-items:center; justify-content:center;
-    font-size:8.5px; font-weight:900; color:#fff;
+    font-size:8.5px; font-weight:900; color:#111;
   }
   .tj-p.idolo .c{background:#111; color:#fff; outline:1.5px solid #fff;}
   .tj-p .c.vacio{background:rgba(0,0,0,.35); outline:1.5px dashed rgba(255,255,255,.6); color:#fff; opacity:.85;}
   .tj-p b{font-size:7.5px; display:block; background:rgba(0,0,0,.65); padding:1px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:54px; color:#fff; font-weight:700;}
   .tj-tag{font-size:9px; letter-spacing:2.5px; color:var(--muted); font-weight:900; margin:8px 0 4px; text-transform:uppercase;}
-  .tj-bench{display:flex; flex-wrap:wrap; gap:4px;}
-  .tj-bench span{border:1px solid var(--line); padding:2px 7px; font-size:9.5px; font-weight:700; color:var(--ink);}
+  .tj-bench{display:flex; flex-wrap:wrap; gap:7px;}
+  .tj-bench span{border:1.5px solid var(--ink); padding:9px 13px; font-size:12.5px; font-weight:800; color:var(--ink); cursor:pointer;}
   .tj-bench span em{color:var(--blue); font-style:normal; font-weight:900;}
   .tj-bench span.vacio{opacity:.4; border-style:dashed;}
+  .tj-bench span.sel{border-color:var(--blue); color:var(--blue); border-width:2px; font-weight:900;}
+  .tj-p.target{cursor:pointer;}
+  .tj-p.target .c{outline:3px solid var(--blue); outline-offset:2px; animation:marca 1s infinite;}
+  @keyframes marca{0%,100%{outline-color:var(--blue);} 50%{outline-color:transparent;}}
+  .tj-pitch.eligiendo .tj-p:not(.target){opacity:.4;}
 
   /* ---- COPA ---- */
   table{width:100%; border-collapse:collapse; font-size:12px;}
@@ -158,7 +163,7 @@
   .scorebar .tm{font-size:10px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; text-align:center; line-height:1.35;}
   .scorebar .mid{text-align:center; padding:0 14px;}
   .scorebar .score{font-size:44px; font-weight:900; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-2px; color:var(--ink);}
-  .minuto{display:inline-block; margin-top:5px; font-size:11px; color:#fff; font-weight:900; background:var(--blue); padding:2px 9px; font-variant-numeric:tabular-nums; letter-spacing:1px;}
+  .minuto{display:inline-block; margin-top:5px; font-size:11px; color:#111; font-weight:900; background:var(--blue); padding:2px 9px; font-variant-numeric:tabular-nums; letter-spacing:1px;}
   .mombox{margin:10px auto 0; max-width:420px;}
   .momlbl{display:flex; justify-content:space-between; font-size:8px; color:var(--muted); letter-spacing:1.5px; margin-bottom:3px; font-weight:800;}
   .mom{height:3px; background:var(--line); position:relative; overflow:hidden;}
@@ -216,7 +221,7 @@
   .bigemoji{font-size:56px; text-align:center; margin:6px 0;}
   .center{text-align:center;}
   .tarjeton{margin:14px auto; max-width:400px; text-align:center; border:1px solid var(--ink); padding:0 12px 12px; background:var(--surface);}
-  .tj-brand{font-size:10px; letter-spacing:4px; color:#fff; background:var(--blue); font-weight:900; text-transform:uppercase; margin:0 -12px 12px; padding:8px 0;}
+  .tj-brand{font-size:10px; letter-spacing:4px; color:#111; background:var(--blue); font-weight:900; text-transform:uppercase; margin:0 -12px 12px; padding:8px 0;}
   .tj-emoji{font-size:38px; margin:2px 0;}
   .tj-res{font-size:19px; font-weight:900; letter-spacing:-.5px; color:var(--ink);}
   .tj-sub{font-size:9.5px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:1px;}
@@ -230,7 +235,7 @@
   @keyframes caer{to{transform:translateY(106vh) rotate(720deg);}}
   footer{text-align:center; color:var(--muted); font-size:9px; margin-top:18px; line-height:1.6; letter-spacing:.5px;}
   .donar{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;}
-  .donar a{display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#fff; background:var(--blue); padding:11px 20px; font-weight:900; font-size:12px; letter-spacing:1px; text-transform:uppercase;}
+  .donar a{display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#111; background:var(--blue); padding:11px 20px; font-weight:900; font-size:12px; letter-spacing:1px; text-transform:uppercase;}
   .donar a:active{transform:scale(.96);}
   .adslot{margin:12px 0; min-height:60px; border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:9px; letter-spacing:2.5px; text-transform:uppercase;}
   .subpanel{display:none;}
@@ -302,7 +307,7 @@
       <div class="tj-pitch" id="draftPitch"></div>
       <div class="tj-tag">— Banco (suplentes) —</div>
       <div class="tj-bench" id="draftBench"></div>
-      <button class="btn" style="width:100%; margin-top:10px;" onclick="abrirPizarraPre('draft')">Acomodar equipo</button>
+      <p class="muted" style="font-size:11px; margin-top:6px;">Tocá un suplente y después el lugar marcado para meterlo. Tocá a uno de la cancha (con banco libre) para bajarlo y liberar su puesto.</p>
       <div class="meter">
         <div class="m"><div class="v" id="mAtk" style="color:var(--red)">0</div><div class="l">ATAQUE</div></div>
         <div class="m"><div class="v" id="mMed" style="color:var(--yellow)">0</div><div class="l">MEDIO</div></div>
@@ -318,10 +323,14 @@
       <h2 id="cupTitle">🏆 Fase de grupos</h2>
       <div class="bracket" id="bracket"></div>
       <div id="groupBox"><br><table id="groupTable"></table><br><div id="fixtures"></div></div>
+      <h2 style="margin-top:14px;">Tu equipo</h2>
+      <p class="muted" style="font-size:11px; margin-bottom:4px;">Tocá un suplente y después el lugar marcado en la cancha para meterlo.</p>
+      <div class="tj-pitch" id="cupPitch"></div>
+      <div class="tj-tag">— Banco —</div>
+      <div class="tj-bench" id="cupBench"></div>
       <div class="sinbox" id="sinCup"></div>
       <br>
       <button class="btn big" id="btnPlay" onclick="irAlPartido()">JUGAR PARTIDO</button>
-      <button class="btn" style="width:100%; margin-top:8px;" onclick="abrirPizarraPre('cup')">Ajustar equipo (titular ↔ banco)</button>
     </div>
   </div>
 
@@ -460,7 +469,7 @@ const SQUADS = [
  {t:'Argentina', y:2026, f:'🇦🇷', p:[['Dibu Martínez','ARQ',84],['Molina','DEF',74],['C. Romero','DEF',78],['Lisandro M.','DEF',78],['Tagliafico','DEF',70],['De Paul','MED',78],['Enzo Fernández','MED',83],['Mac Allister','MED',82],['Messi','DEL',93],['J. Álvarez','DEL',83],['Lautaro','DEL',84],['Garnacho','DEL',77],['Mastantuono','MED',76]]},
  {t:'Brasil', y:2026, f:'🇧🇷', p:[['Alisson','ARQ',83],['Danilo','DEF',74],['Marquinhos','DEF',78],['Gabriel M.','DEF',77],['Wendell','DEF',69],['Casemiro','MED',77],['Bruno G.','MED',78],['Paquetá','MED',77],['Raphinha','DEL',83],['Vinícius Jr','DEL',85],['Rodrygo','DEL',82],['Endrick','DEL',76]]},
  {t:'España', y:2026, f:'🇪🇸', p:[['Unai Simón','ARQ',78],['Carvajal','DEF',78],['Le Normand','DEF',76],['Cubarsí','DEF',77],['Cucurella','DEF',76],['Rodri','MED',85],['Pedri','MED',83],['Fabián Ruiz','MED',78],['Lamine Yamal','DEL',84],['Morata','DEL',75],['Nico Williams','DEL',82]]},
- {t:'Inglaterra', y:2026, f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:[['Pickford','ARQ',77],['Walker','DEF',76],['Stones','DEF',78],['Guéhi','DEF',76],['Shaw','DEF',74],['Rice','MED',83],['Bellingham','MED',84],['Foden','MED',83],['Saka','DEL',83],['Kane','DEL',84],['Palmer','DEL',82]]},
+ {t:'Inglaterra', y:2026, f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:[['Pickford','ARQ',78],['Alexander-Arnold','DEF',80],['Stones','DEF',79],['Guéhi','DEF',78],['Lewis-Skelly','DEF',75],['Rice','MED',82],['Bellingham','MED',86],['Palmer','MED',82],['Saka','DEL',83],['Kane','DEL',84],['Gordon','DEL',78],['Foden','MED',80]]},
  {t:'Inglaterra', y:1966, f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:[['Banks','ARQ',84],['Cohen','DEF',75],['J. Charlton','DEF',78],['Moore','DEF',90],['Wilson','DEF',75],['Stiles','MED',74],['B. Charlton','MED',85],['Ball','MED',78],['Peters','MED',77],['Hurst','DEL',83],['Hunt','DEL',76]]},
  {t:'Brasil', y:1958, f:'🇧🇷', p:[['Gilmar','ARQ',78],['D. Santos','DEF',83],['Bellini','DEF',75],['Orlando','DEF',74],['N. Santos','DEF',83],['Zito','MED',77],['Didí','MED',84],['Zagallo','MED',78],['Garrincha','DEL',91],['Vavá','DEL',82],['Pelé','DEL',93]]},
  {t:'Portugal', y:1966, f:'🇵🇹', p:[['J. Pereira','ARQ',68],['Morais','DEF',68],['Baptista','DEF',69],['Vicente','DEF',69],['Hilário','DEF',68],['Graça','MED',74],['Coluna','MED',82],['J. Augusto','MED',75],['Simões','DEL',77],['Eusébio','DEL',91],['Torres','DEL',77]]},
@@ -468,7 +477,7 @@ const SQUADS = [
  {t:'Polonia', y:1974, f:'🇵🇱', p:[['Tomaszewski','ARQ',78],['Szymanowski','DEF',70],['Gorgoń','DEF',74],['Żmuda','DEF',75],['Musiał','DEF',68],['Kasperczak','MED',74],['Deyna','MED',82],['Maszczyk','MED',69],['Lato','DEL',83],['Szarmach','DEL',78],['Gadocha','DEL',77]]},
  {t:'Escocia', y:1978, f:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', p:[['Rough','ARQ',66],['Jardine','DEF',68],['Forsyth','DEF',67],['Buchan','DEF',70],['Donachie','DEF',67],['Rioch','MED',70],['Gemmill','MED',76],['Souness','MED',78],['Dalglish','DEL',84],['Jordan','DEL',74],['Hartford','MED',68]]},
  {t:'Italia', y:1982, f:'🇮🇹', p:[['Zoff','ARQ',85],['Gentile','DEF',78],['Scirea','DEF',83],['Collovati','DEF',75],['Cabrini','DEF',78],['Oriali','MED',70],['Tardelli','MED',82],['Antognoni','MED',78],['Conti','DEL',78],['P. Rossi','DEL',83],['Graziani','DEL',74]]},
- {t:'El Salvador', y:1982, f:'🇸🇻', p:[['Mora','ARQ',59],['Osorto','DEF',56],['Jovel','DEF',57],['Recinos','DEF',56],['Castillo','DEF',55],['Rugamas','MED',55],['Huezo','MED',58],['Fagoaga','MED',54],['Rivas','DEL',59],['Zapata','DEL',57],['Ramírez','DEL',58]]},
+ {t:'El Salvador', y:1982, f:'🇸🇻', p:[['Mora','ARQ',59],['Osorto','DEF',56],['Jovel','DEF',57],['Recinos','DEF',56],['Castillo','DEF',55],['Rugamas','MED',55],['Huezo','MED',58],['Fagoaga','MED',54],['Rivas','DEL',59],['Zapata','DEL',57],['Mágico González','DEL',74]]},
  {t:'Francia', y:1986, f:'🇫🇷', p:[['Bats','ARQ',77],['Amoros','DEF',78],['Battiston','DEF',76],['Bossis','DEF',76],['Ayache','DEF',69],['Fernández','MED',77],['Tigana','MED',83],['Giresse','MED',83],['Platini','MED',90],['Rocheteau','DEL',78],['Papin','DEL',77]]},
  {t:'Dinamarca', y:1986, f:'🇩🇰', p:[['Rasmussen','ARQ',68],['Busk','DEF',69],['M. Olsen','DEF',77],['I. Nielsen','DEF',68],['Sivebæk','DEF',70],['Lerby','MED',77],['J. Olsen','MED',76],['Arnesen','MED',78],['M. Laudrup','DEL',83],['Elkjær','DEL',82],['Berggreen','DEL',70]]},
  {t:'URSS', y:1986, f:'🚩', p:[['Dasaev','ARQ',82],['Bessonov','DEF',74],['Chivadze','DEF',75],['Demianenko','DEF',76],['Kuznetsov','DEF',74],['Aleinikov','MED',75],['Zavarov','MED',78],['Rats','MED',76],['Yakovenko','MED',70],['Belanov','DEL',78],['Blokhin','DEL',78]]},
@@ -478,9 +487,9 @@ const SQUADS = [
  {t:'Argentina', y:1990, f:'🇦🇷', p:[['Goycochea','ARQ',78],['Simón','DEF',69],['Ruggeri','DEF',82],['Serrizuela','DEF',66],['Sensini','DEF',70],['Basualdo','MED',67],['Giusti','MED',69],['Burruchaga','MED',77],['Calderón','MED',69],['Maradona','DEL',93],['Caniggia','DEL',78]]},
  {t:'Irlanda', y:1990, f:'🇮🇪', p:[['Bonner','ARQ',70],['Morris','DEF',66],['McCarthy','DEF',69],['Moran','DEF',68],['Staunton','DEF',69],['Houghton','MED',70],['McGrath','MED',77],['Townsend','MED',69],['Sheedy','MED',69],['Aldridge','DEL',69],['Quinn','DEL',68]]},
  {t:'Colombia', y:1994, f:'🇨🇴', p:[['Córdoba','ARQ',75],['Herrera','DEF',69],['Escobar','DEF',70],['Perea','DEF',66],['W. Pérez','DEF',64],['G. Gómez','MED',70],['Álvarez','MED',68],['Rincón','MED',78],['Valderrama','MED',83],['Asprilla','DEL',78],['De Ávila','DEL',70]]},
- {t:'Bolivia', y:1994, f:'🇧🇴', p:[['Trucco','ARQ',64],['Sandy','DEF',64],['Rimba','DEF',62],['Quinteros','DEF',62],['Soria','DEF',63],['Cristaldo','MED',64],['E. Sánchez','MED',69],['Etcheverry','MED',75],['Baldivieso','MED',66],['Ramallo','DEL',64],['W. Moreno','DEL',62]]},
+ {t:'Bolivia', y:1994, f:'🇧🇴', p:[['Trucco','ARQ',64],['Sandy','DEF',64],['Rimba','DEF',62],['Quinteros','DEF',62],['Soria','DEF',63],['Cristaldo','MED',64],['E. Sánchez','MED',69],['Etcheverry','MED',75],['Baldivieso','MED',66],['Ramallo','DEL',64],['J. Moreno','DEL',62]]},
  {t:'Suecia', y:1994, f:'🇸🇪', p:[['Ravelli','ARQ',77],['R. Nilsson','DEF',69],['P. Andersson','DEF',70],['Björklund','DEF',69],['Ljung','DEF',66],['Schwarz','MED',70],['Thern','MED',75],['Ingesson','MED',69],['K. Andersson','DEL',76],['Dahlin','DEL',77],['Brolin','DEL',82]]},
- {t:'Arabia Saudita', y:1994, f:'🇸🇦', p:[['Al-Deayea','ARQ',70],['Al-Khlaiwi','DEF',63],['Madani','DEF',62],['Al-Jahani','DEF',61],['Zubromawi','DEF',62],['Al-Bishi','MED',64],['Amin','MED',63],['Al-Owairan','MED',75],['Al-Muwallid','MED',66],['Al-Jaber','DEL',70],['Falatah','DEL',61]]},
+ {t:'Arabia Saudita', y:1994, f:'🇸🇦', p:[['Al-Deayea','ARQ',70],['Al-Khlaiwi','DEF',63],['Madani','DEF',62],['Al-Dosari','DEF',61],['Zubromawi','DEF',62],['Al-Bishi','MED',64],['Amin','MED',63],['Al-Owairan','MED',75],['Al-Muwallid','MED',66],['Al-Jaber','DEL',70],['Falatah','DEL',61]]},
  {t:'Nigeria', y:1994, f:'🇳🇬', p:[['Rufai','ARQ',74],['Eguavoen','DEF',64],['Okechukwu','DEF',69],['Iroha','DEF',64],['Keshi','DEF',68],['Oliseh','MED',74],['Okocha','MED',78],['Finidi','DEL',76],['Amokachi','DEL',75],['Yekini','DEL',78],['Amunike','DEL',74]]},
  {t:'Argentina', y:1998, f:'🇦🇷', p:[['Roa','ARQ',78],['Zanetti','DEF',82],['Ayala','DEF',78],['Chamot','DEF',74],['Sensini','DEF',70],['Almeyda','MED',74],['Simeone','MED',78],['Verón','MED',82],['Ortega','MED',82],['C. López','DEL',78],['Batistuta','DEL',84]]},
  {t:'Croacia', y:1998, f:'🇭🇷', p:[['Ladić','ARQ',74],['Štimac','DEF',74],['Bilić','DEF',75],['Šimić','DEF',74],['Jarni','DEF',75],['Asanović','MED',77],['Prosinečki','MED',77],['Boban','MED',82],['Stanić','DEL',70],['Šuker','DEL',83],['Vlaović','DEL',69]]},
@@ -515,16 +524,16 @@ const SQUADS = [
  {t:'Haití', y:1974, f:'🇭🇹', p:[['Francillon','ARQ',58],['Bayonne','DEF',54],['Auguste','DEF',55],['Nazaire','DEF',54],['Ducoste','DEF',53],['Antoine','MED',55],['Vorbe','MED',60],['Désir','MED',56],['Sannon','DEL',64],['Saint-Vil','DEL',56],['Barthélémy','DEL',55]]},
  {t:'Nueva Zelanda', y:1982, f:'🇳🇿', p:[['Van Hattum','ARQ',55],['Dods','DEF',54],['Herbert','DEF',56],['Elrick','DEF',54],['Boath','DEF',53],['Cole','MED',55],['Cresswell','MED',56],['Sumner','MED',61],['Wooddin','DEL',60],['Rufer','DEL',63],['McClure','DEL',53]]},
  {t:'Kuwait', y:1982, f:'🇰🇼', p:[['Al-Tarabulsi','ARQ',57],['Mubarak','DEF',54],['Mayoof','DEF',54],['Mohammed','DEF',55],['Al-Mubarak','DEF',53],['Al-Buloushi','MED',55],['Al-Houti','MED',58],['Karam','MED',56],['Al-Dakhil','DEL',63],['Al-Anberi','DEL',56],['Marzouq','DEL',55]]},
- {t:'Irak', y:1986, f:'🇮🇶', p:[['Hammoudi','ARQ',58],['Allawi','DEF',56],['Hashim','DEF',55],['Mohammed','DEF',54],['Shaker','DEF',57],['Hussein','MED',56],['Saddam','MED',54],['Gorgis','MED',58],['Ahmed Radhi','DEL',67],['Hussein Saeed','DEL',65],['Hanoon','DEL',54]]},
+ {t:'Irak', y:1986, f:'🇮🇶', p:[['Hammoudi','ARQ',58],['Allawi','DEF',56],['Hashim','DEF',55],['Mohammed','DEF',54],['Shaker','DEF',57],['Hussein','MED',56],['Saddam','MED',54],['Gorgis','MED',58],['Ahmed Radhi','DEL',67],['Hussein Saeed','DEL',65],['Rahim Hameed','DEL',58]]},
  {t:'Emiratos Árabes', y:1990, f:'🇦🇪', p:[['Faraj','ARQ',55],['Jumaa','DEF',53],['K. Mubarak','DEF',56],['Abdulrahman','DEF',54],['Mohamed','DEF',53],['Abdullah','MED',55],['F. Mubarak','MED',56],['Al-Haddad','MED',54],['Al-Talyani','DEL',64],['Bilal','DEL',57],['Hussain','DEL',54]]},
  {t:'Grecia', y:1994, f:'🇬🇷', p:[['Minou','ARQ',57],['Apostolakis','DEF',59],['Kolitsidakis','DEF',55],['Manolas','DEF',60],['Karagiannis','DEF',56],['Tsalouchidis','MED',60],['Nioplias','MED',57],['Tsiantakis','MED',56],['Saravakos','DEL',64],['Machlas','DEL',60],['Mitropoulos','DEL',55]]},
- {t:'Jamaica', y:1998, f:'🇯🇲', p:[['Barrett','ARQ',58],['Goodison','DEF',57],['Sinclair','DEF',56],['Lowe','DEF',55],['Malcolm','DEF',54],['Gardner','MED',60],['Whitmore','MED',63],['Earle','MED',59],['Cargill','MED',55],['Hall','DEL',58],['Burton','DEL',57]]},
+ {t:'Jamaica', y:1998, f:'🇯🇲', p:[['Barrett','ARQ',58],['Goodison','DEF',57],['Sinclair','DEF',56],['Lowe','DEL',55],['Malcolm','DEF',54],['Gardner','MED',60],['Whitmore','MED',63],['Earle','MED',59],['Cargill','MED',55],['Hall','DEL',58],['Burton','DEL',57]]},
  {t:'Trinidad y Tobago', y:2006, f:'🇹🇹', p:[['Hislop','ARQ',65],['Edwards','DEF',58],['Lawrence','DEF',59],['Sancho','DEF',55],['Gray','DEF',54],['Theobald','MED',54],['Birchall','MED',58],['Whitley','MED',57],['Yorke','MED',68],['Stern John','DEL',61],['Latapy','DEL',63]]},
  {t:'Angola', y:2006, f:'🇦🇴', p:[['João Ricardo','ARQ',59],['Jamba','DEF',56],['Kali','DEF',57],['Loco','DEF',54],['Delgado','DEF',55],['André','MED',56],['Mendonça','MED',60],['Figueiredo','MED',55],['Zé Kalanga','MED',58],['Akwá','DEL',62],['Flávio','DEL',60]]},
  {t:'Togo', y:2006, f:'🇹🇬', p:[['Agassa','ARQ',58],['Nibombé','DEF',56],['Abalo','DEF',55],['Tchangai','DEF',54],['Assemoassa','DEF',53],['Romao','MED',58],['Mamam','MED',56],['Salifou','MED',57],['Dossevi','DEL',58],['Adebayor','DEL',70],['Kader','DEL',60]]},
  {t:'Corea del Norte', y:2010, f:'🇰🇵', p:[['Ri Myong-guk','ARQ',58],['Cha Jong-hyok','DEF',54],['Ri Jun-il','DEF',56],['Ri Kwang-chon','DEF',55],['Ji Yun-nam','DEF',56],['Pak Nam-chol','MED',56],['Mun In-guk','MED',57],['An Yong-hak','MED',58],['Hong Yong-jo','MED',61],['Jong Tae-se','DEL',66],['Choe Kum-chol','DEL',54]]},
  {t:'Honduras', y:2010, f:'🇭🇳', p:[['Valladares','ARQ',63],['Sabillón','DEF',56],['Chávez','DEF',57],['Figueroa','DEF',64],['Izaguirre','DEF',62],['W. Palacios','MED',68],['Guevara','MED',62],['Espinoza','MED',58],['Turcios','MED',56],['Suazo','DEL',66],['Pavón','DEL',61]]},
- {t:'Panamá', y:2018, f:'🇵🇦', p:[['Penedo','ARQ',64],['Murillo','DEF',58],['R. Torres','DEF',61],['Escobar','DEF',57],['E. Davis','DEF',56],['A. Gómez','MED',57],['Cooper','MED',56],['Godoy','MED',59],['Bárcenas','MED',56],['B. Pérez','DEL',59],['Tejada','DEL',58]]},
+ {t:'Panamá', y:2018, f:'🇵🇦', p:[['Penedo','ARQ',64],['Murillo','DEF',58],['R. Torres','DEF',61],['Escobar','DEF',57],['E. Davis','DEF',56],['G. Gómez','MED',57],['Cooper','MED',56],['Godoy','MED',59],['Bárcenas','MED',56],['B. Pérez','DEL',59],['Tejada','DEL',58]]},
 ];
 
 // Rivales del mundial: [nombre, bandera, fuerza]
@@ -628,6 +637,7 @@ const TNOM = {euro:'EUROCOPA', clasif:'CLASIFICACIÓN AL MUNDIAL', mundial:'MUND
 
 // ================== PANTALLAS ==================
 function ir(scr){
+  G.scr = scr; eqSel = null;
   document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
   $(scr).classList.add('on');
   $('btnMenu').style.display = scr === 'scrHome' ? 'none' : 'inline-block';
@@ -723,6 +733,58 @@ function medias(){
   return {atk:avg(by('DEL')), med:avg(by('MED')), def:avg([...by('DEF'), ...by('ARQ')])};
 }
 
+// ===== acomodo inline: suplente -> marca amarilla en la cancha =====
+let eqSel = null;
+function eqPick(i){
+  eqSel = eqSel === i ? null : i;
+  renderEquipos();
+}
+function eqABanco(xiIx){
+  if (G.banco.length >= BANCO_N){ toast('Banco lleno: primero sacá a un suplente.'); return; }
+  const j = G.xi.splice(xiIx, 1)[0];
+  G.banco.push(j);
+  toast(`${j.n} al banco · se libera un lugar de ${j.pos}`);
+  renderEquipos();
+}
+function eqSwap(xiIx){
+  if (eqSel == null || !G.banco[eqSel]) return;
+  const b = G.banco[eqSel], t = G.xi[xiIx];
+  G.xi[xiIx] = b; G.banco[eqSel] = t;
+  eqSel = null;
+  toast(`${b.n} adentro · ${t.n} al banco`);
+  renderEquipos();
+}
+function renderEquipos(){
+  if (G.scr === 'scrDraft') renderDraft(); else renderCup();
+}
+function renderEquipo(pid, bid){
+  const L = {DEL:19, MED:43, DEF:66, ARQ:88};
+  const selJ = eqSel != null ? G.banco[eqSel] : null;
+  let ph = '';
+  for (const [pos, cant] of slotsNecesarios()){
+    const fila = G.xi.map((j, ix) => ({j, ix})).filter(o => o.j.pos === pos);
+    for (let k = 0; k < cant; k++){
+      const x = (k + 1) / (cant + 1) * 100;
+      const o = fila[k];
+      if (o){
+        const target = selJ && selJ.pos === pos;
+        const aBanco = !selJ && G.banco.length < BANCO_N; // tocás a uno de la cancha y baja al banco
+        ph += `<div class="tj-p${G.modo !== 1 && LEYENDAS.has(o.j.n) ? ' idolo' : ''}${target ? ' target' : ''}" style="left:${x}%; top:${L[pos]}%"${target ? ` onclick="eqSwap(${o.ix})"` : aBanco ? ` onclick="eqABanco(${o.ix})"` : ''}>
+          <div class="c">${iniciales(o.j.n)}</div><b>${o.j.n}</b></div>`;
+      } else {
+        ph += `<div class="tj-p" style="left:${x}%; top:${L[pos]}%"><div class="c vacio">${pos}</div></div>`;
+      }
+    }
+  }
+  $(pid).innerHTML = `<i class="tj-mid"></i><i class="tj-cc"></i><i class="tj-area" style="top:-2px;"></i><i class="tj-area" style="bottom:-2px;"></i>` + ph;
+  $(pid).className = 'tj-pitch' + (selJ ? ' eligiendo' : '');
+  $(bid).innerHTML = Array.from({length:BANCO_N}, (_, i) => {
+    const j = G.banco[i];
+    if (!j) return `<span class="vacio">· libre ·</span>`;
+    return `<span class="${eqSel === i ? 'sel' : ''}" onclick="eqPick(${i})">${G.modo !== 1 && LEYENDAS.has(j.n) ? '👑 ' : ''}${j.n} <em>${G.modo === 1 ? '?' : j.r}</em></span>`;
+  }).join('');
+}
+
 function renderDraft(){
   const sq = SQUADS[G.squadIx];
   $('rollTeam').innerHTML = `${sq.f} ${sq.t} <small>· Mundial ${sq.y}</small>`;
@@ -741,7 +803,7 @@ function renderDraft(){
     const j = {n:p[0], pos:p[1], r:p[2]};
     const ya = elegidos.has(p[0]);
     const fit = !ya && puedeElegir(j);
-    const ido = LEYENDAS.has(j.n);
+    const ido = G.modo !== 1 && LEYENDAS.has(j.n);
     const dest = (G.xi.length < 11 && slotsLibres(j.pos)) ? 'TITULAR' : 'BANCO';
     return `<div class="pk ${fit?'':'nofit'}${ido?' idolo':''}" onclick="elegir(${i})">
       <span class="pos">${j.pos}</span><span class="nm">${ido?'👑 ':''}${j.n}</span>
@@ -749,24 +811,8 @@ function renderDraft(){
       <span class="rt">${G.modo===1?'❓':j.r}</span></div>`;
   }).join('');
 
-  // cancha verde con tu equipo
-  const L = {DEL:19, MED:43, DEF:66, ARQ:88};
-  let ph = '';
-  for (const [pos, cant] of slotsNecesarios()){
-    const fila = G.xi.filter(j => j.pos === pos);
-    for (let k = 0; k < cant; k++){
-      const x = (k + 1) / (cant + 1) * 100;
-      const j = fila[k];
-      ph += j
-        ? `<div class="tj-p${LEYENDAS.has(j.n) ? ' idolo' : ''}" style="left:${x}%; top:${L[pos]}%"><div class="c">${iniciales(j.n)}</div><b>${j.n}</b></div>`
-        : `<div class="tj-p" style="left:${x}%; top:${L[pos]}%"><div class="c vacio">${pos}</div></div>`;
-    }
-  }
-  $('draftPitch').innerHTML = `<i class="tj-mid"></i><i class="tj-cc"></i><i class="tj-area" style="top:-2px;"></i><i class="tj-area" style="bottom:-2px;"></i>` + ph;
-  $('draftBench').innerHTML = Array.from({length:BANCO_N}, (_, i) => {
-    const j = G.banco[i];
-    return j ? `<span>${LEYENDAS.has(j.n) ? '👑 ' : ''}${j.n} <em>${G.modo === 1 ? '?' : j.r}</em></span>` : `<span class="vacio">· libre ·</span>`;
-  }).join('');
+  // cancha verde con tu equipo (tocá un suplente para reubicarlo)
+  renderEquipo('draftPitch', 'draftBench');
 
   const m = medias();
   $('mAtk').textContent = G.modo===1 && G.xi.length<11 ? '?' : (m.atk || '–');
@@ -892,6 +938,7 @@ function renderCup(){
     $('fixtures').innerHTML = '';
     $('btnPlay').textContent = `JUGAR ${G.FASES[G.fase].toUpperCase()} vs ${G.rival[1]} ${G.rival[0]} ${G.rival[3] || ''}`;
   }
+  renderEquipo('cupPitch', 'cupBench');
   const SS = sinergias();
   $('sinCup').innerHTML = SS.lista.length
     ? '<b>Sinergias de tu equipo</b>' + SS.lista.map(t => `<div>${t}</div>`).join('')
@@ -924,7 +971,7 @@ function renderMk(){
   $('mkList').innerHTML = sq.p.map((pl, i) => {
     const j = {n:pl[0], pos:pl[1], r:pl[2]};
     const ya = enEquipo(j.n, `${sq.t} ${sq.y}`);
-    const ido = LEYENDAS.has(j.n);
+    const ido = G.modo !== 1 && LEYENDAS.has(j.n);
     return `<div class="pk ${ya ? 'nofit' : ''}${ido ? ' idolo' : ''}" onclick="mkPick(${i})">
       <span class="pos">${j.pos}</span><span class="nm">${ido ? '👑 ' : ''}${j.n}</span>
       <span class="rt">${G.modo === 1 ? '❓' : j.r}</span></div>`;
@@ -938,7 +985,7 @@ function renderMk(){
     G.banco.forEach((j, i) => { if (j.pos === sqp[1]) cands.push({j, i, banco:true}); });
     $('mkSwapList').innerHTML = cands.length ? cands.map(c => {
       const ini = c.j.n.replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      return `<div class="pchip${LEYENDAS.has(c.j.n) ? ' idolo' : ''}${c.banco ? ' bench' : ''}" onclick="mkSwapDo(${c.i}, ${c.banco})">
+      return `<div class="pchip${G.modo !== 1 && LEYENDAS.has(c.j.n) ? ' idolo' : ''}${c.banco ? ' bench' : ''}" onclick="mkSwapDo(${c.i}, ${c.banco})">
         <div class="pc-circle" style="background:var(--line);"><span>${ini}</span></div>
         <b>${c.j.n}</b><span class="pc-sub">${c.j.pos} · ${G.modo === 1 ? '?' : c.j.r}${c.banco ? ' · banco' : ''}</span></div>`;
     }).join('') : '<p class="muted">No tenés a nadie de esa posición.</p>';
@@ -996,7 +1043,8 @@ function mediasVivas(){
     const dep = (k === 'pac' || k === 'phy') ? 0.68 + 0.32 * j.sta / 100 : 0.85 + 0.15 * j.sta / 100;
     return attrs(j)[k] * dep - (j.lesion ? 6 : 0);
   };
-  const by = p => act.filter(j => j.pos === p);
+  const linea = j => j.posJuega || j.pos; // puesto que ocupa hoy (puede jugar fuera de posición)
+  const by = p => act.filter(j => linea(j) === p);
   const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 45;
   const meds = by('MED'), defs = by('DEF'), dels = by('DEL'), arqs = by('ARQ');
   // CONTROL: pase+creatividad del medio; pocos volantes = no tenés la pelota
@@ -1109,7 +1157,7 @@ function renderPizarra(){
 function chipPiz(j, i, esBanco){
   const e = Math.round(j.sta);
   const seleccionado = esBanco ? piz.selB === i : piz.selT === i;
-  const cls = (esBanco ? ' bench' : '') + (seleccionado ? ' sel' : '') + (j.roja ? ' roja' : '') + (LEYENDAS.has(j.n) ? ' idolo' : '');
+  const cls = (esBanco ? ' bench' : '') + (seleccionado ? ' sel' : '') + (j.roja ? ' roja' : '') + (G.modo !== 1 && LEYENDAS.has(j.n) ? ' idolo' : '');
   const ini = j.n.replace(/[^A-Za-zÀ-ÿ ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const col = e > 60 ? 'var(--green)' : e > 40 ? 'var(--yellow)' : 'var(--red)';
   return `<div class="pchip${cls}" onclick="${esBanco ? `selBanco(${i})` : `selTitular(${i})`}">
@@ -1141,6 +1189,7 @@ function intentarCambio(){
   const entra = G.banco.splice(bIx, 1)[0];
   const sale = G.xi[tIx];
   entra.sta = 100;
+  entra.posJuega = sale.posJuega || sale.pos; // ocupa el puesto del que sale: la formación no cambia
   G.xi[tIx] = entra;
   M.subs--;
   ev(`🔁 CAMBIO: sale ${sale.n}, entra ${entra.n} (${entra.from}).${entra.pos !== sale.pos ? ' ⚠️ Juega fuera de posición natural.' : ''}`, 'warn', M.min);
@@ -1162,7 +1211,7 @@ function ev(txt, cls, min){
 
 function scorerUser(){
   const act = G.xi.filter(j => !j.roja);
-  const pesos = act.map(j => j.pos === 'DEL' ? 5 : j.pos === 'MED' ? 2 : j.pos === 'DEF' ? .4 : .05);
+  const pesos = act.map(j => { const l = j.posJuega || j.pos; return l === 'DEL' ? 5 : l === 'MED' ? 2 : l === 'DEF' ? .4 : .05; });
   let r = Math.random() * pesos.reduce((a, b) => a + b, 0);
   for (let i = 0; i < act.length; i++){ r -= pesos[i]; if (r <= 0) return act[i]; }
   return act[act.length - 1];
@@ -1403,7 +1452,7 @@ function siguientePenal(){
 function cerrarPartido(gA, gB, ganePen){
   // vuelve tu formación titular (los cambios fueron solo por el partido)
   if (G.xiSnap){ G.xi = G.xiSnap; G.banco = G.bancoSnap; G.xiSnap = null; G.bancoSnap = null; }
-  [...G.xi, ...G.banco].forEach(j => { j.sta = 100; j.lesion = false; j.roja = false; }); // arrancás cada partido fresco
+  [...G.xi, ...G.banco].forEach(j => { j.sta = 100; j.lesion = false; j.roja = false; delete j.posJuega; }); // arrancás cada partido fresco
   const R = G.rival;
   const res = `${gA}-${gB}${ganePen !== null && ganePen !== undefined ? (ganePen ? ' (pen ✓)' : ' (pen ✗)') : ''}`;
   G.camino.push(`${TT[G.torneo]} ${G.FASES[G.fase]}: vs ${R[1]} ${R[0]} ${R[3] || ''} ${res}`);
@@ -1446,7 +1495,7 @@ function cerrarPartido(gA, gB, ganePen){
 }
 
 function lanzarConfetti(){
-  const cols = ['#2b4bf2','#6e85ff','#111114','#ffffff'];
+  const cols = ['#f0c000','#ffe48a','#111114','#ffffff'];
   for (let i = 0; i < 70; i++){
     const c = document.createElement('div');
     c.className = 'confeti';
@@ -1512,10 +1561,10 @@ function descargarTarjeton(){
   cv.width = 1080; cv.height = 1700;
   const x = cv.getContext('2d');
   x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 1080, 1700);
-  x.fillStyle = '#2b4bf2'; x.fillRect(0, 0, 1080, 130);
+  x.fillStyle = '#f0c000'; x.fillRect(0, 0, 1080, 130);
   x.strokeStyle = '#111114'; x.lineWidth = 2; x.strokeRect(40, 170, 1000, 1480);
   x.textAlign = 'center';
-  x.fillStyle = '#ffffff'; x.font = "900 44px 'Space Grotesk', Arial";
+  x.fillStyle = '#111114'; x.font = "900 44px 'Space Grotesk', Arial";
   x.fillText('M U N D I A L I T O', 540, 85);
   x.font = '95px Arial';
   x.fillText(G.fueCampeon ? '🏆' : '😭', 540, 290);
@@ -1545,9 +1594,9 @@ function descargarTarjeton(){
       const cx = px + (k + 1) / (fila.length + 1) * pw;
       const cy = py + L[pos] * phh;
       const ido = LEYENDAS.has(j.n);
-      x.fillStyle = ido ? '#111114' : '#2b4bf2';
+      x.fillStyle = ido ? '#111114' : '#f0c000';
       x.fillRect(cx - 30, cy - 30, 60, 60);
-      x.fillStyle = '#ffffff'; x.font = "900 23px 'Space Grotesk', Arial";
+      x.fillStyle = ido ? '#ffffff' : '#111114'; x.font = "900 23px 'Space Grotesk', Arial";
       x.fillText(iniciales(j.n), cx, cy + 8);
       const nm = j.n.length > 14 ? j.n.slice(0, 14) + '…' : j.n;
       x.font = '800 22px Arial';
@@ -1561,7 +1610,7 @@ function descargarTarjeton(){
 
   // suplentes
   let y = py + phh + 58;
-  x.fillStyle = '#2b4bf2'; x.font = "900 25px 'Space Grotesk', Arial";
+  x.fillStyle = '#a88600'; x.font = "900 25px 'Space Grotesk', Arial";
   x.fillText('/ SUPLENTES', 540, y); y += 42;
   x.fillStyle = '#333336'; x.font = '25px Arial';
   const bn = G.banco.map(j => j.n);
@@ -1572,7 +1621,7 @@ function descargarTarjeton(){
   const goleador = [...G.xi, ...G.banco].sort((a, b) => b.gol - a.gol)[0];
   x.fillStyle = '#76767e'; x.font = '24px Arial';
   x.fillText(`Goleador: ${goleador && goleador.gol > 0 ? goleador.n + ' (' + goleador.gol + ')' : 'sin goleador'} · ${G.partidosJugados} partidos`, 540, 1600);
-  x.fillStyle = '#2b4bf2'; x.font = "900 25px 'Space Grotesk', Arial";
+  x.fillStyle = '#a88600'; x.font = "900 25px 'Space Grotesk', Arial";
   x.fillText('¿ARMÁS UN ONCE MEJOR? · JUGÁ MUNDIALITO', 540, 1640);
 
   cv.toBlob(async b => {
